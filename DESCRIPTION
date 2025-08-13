@@ -17,7 +17,7 @@ Description: UMCG R package containing helper functions for
 URL: https://umcg-mmbi-epidemiology.github.io/mmbi.epi/, https://github.com/umcg-mmbi-epidemiology/mmbi.epi
 Additional_repositories: https://certe-medical-epidemiology.r-universe.dev
 Depends: 
-  R (>= 4.3.0)
+  R (>= 4.2.0)
 Imports:
   certegis,
   plot2
