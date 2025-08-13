@@ -24,7 +24,10 @@ Imports:
 Suggests:
   AMR,
   ggplot2,
-  sf
+  sf,
+  showtext,
+  showtextdb,
+  sysfonts
 License: GPL-2 | file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
