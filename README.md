@@ -5,7 +5,7 @@ This is a UMCG R package containing helper functions for functionalities used in
 Upon loading, official UMCG colours are available too:
 
 ```r
-library(mmbi.ep)
+library(mmbi.epi)
 
 get_colour("umcgdonkerblauw")
 #> [1] "#003183"
