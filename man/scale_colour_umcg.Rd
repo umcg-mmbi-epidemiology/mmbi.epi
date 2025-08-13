@@ -10,8 +10,39 @@ scale_colour_umcg(..., n)
 scale_fill_umcg(..., n)
 }
 \arguments{
+\item{...}{arguments passed on to \code{\link[ggplot2:scale_manual]{ggplot2::scale_colour_manual()}} or \code{\link[ggplot2:scale_manual]{ggplot2::scale_fill_manual()}}}
+
 \item{n}{Number of colours required.}
 }
 \description{
-UMCG Scale Colours
+These are \code{ggplot2} helpers to add organisational colours to \code{ggplot} objects.
+}
+\examples{
+library(ggplot2)
+
+mtcars |>
+  ggplot(aes(x = hp,
+             y = mpg,
+             colour = as.factor(vs)),
+             fill = as.factor(vs)) +
+  geom_point(size = 3) +
+  scale_colour_umcg(n = 3)
+
+mtcars |>
+  ggplot(aes(x = hp,
+             y = mpg,
+             colour = as.factor(vs),
+             fill = as.factor(vs))) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  scale_colour_umcg(n = 2) +
+  scale_fill_umcg(n = 2) +
+  labs(title = "Non-UMCG-styled plot")
+
+# With plot2(), this all goes automatically with less code
+mtcars |>
+  plot2(hp, mpg, as.factor(vs),
+        title = "UMCG-styled plot",
+        subtitle = "(with the right font too; 'Outfit' from Google Fonts)") |>
+  add_smooth(method = "lm")
 }

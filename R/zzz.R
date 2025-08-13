@@ -35,11 +35,15 @@
     umcggoud        = "#B38F00",
     umcg            = c("umcgdonkerblauw","umcgoranje","umcgteal",
                         "umcggroen","umcgpaars","umcggrijs","umcggoud")))
-  options(plot2.colour = "umcg", plot2.colour_font_secondary = "umcgdonkerblauw")
+  options(plot2.colour = "umcg",
+          plot2.colour_font_secondary = "umcgdonkerblauw",
+          plot2.font = "Outfit")
 }
 
 #' @importFrom plot2 unregister_colour
 .onUnload <- function(...) {
   suppressMessages(unregister_colour("^umcg"))
-  options(plot2.colour = NULL, plot2.colour_font_secondary = NULL)
+  options(plot2.colour = NULL,
+          plot2.colour_font_secondary = NULL,
+          plot2.font = NULL)
 }
