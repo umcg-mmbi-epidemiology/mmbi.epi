@@ -31,52 +31,80 @@
 #' * [postcodes][certegis::postcodes]
 #' * [postcodes4_afstanden][certegis::postcodes4_afstanden]
 #' @format NULL
-#' @rdname datasets
-#' @name datasets
+#' @rdname gis-datasets
+#' @name gis-datasets
 #' @export
+#' @examples
+#' geo_provincies
+#'
+#' geo_provincies |>
+#'   plot2(title = "Inwoners in Nederlandse provincies")
+#'
+#' geo_provincies |>
+#'   plot2(colour_fill = "umcgoranje")
+#'
+#' geo_gemeenten |>
+#'   filter_geolocation(provincie == "Groningen") |>
+#'   plot2(category = inwoners / oppervlakte_km2,
+#'         category.title = "Inwoners per km^2",
+#'         title = "Populatiedichtheid in Groningse gemeenten")
+#'
+#' geo_gemeenten |>
+#'   filter_geolocation(provincie == "Groningen") |>
+#'   plot2(category = inwoners / oppervlakte_km2,
+#'         category.title = "Inwoners per km^2",
+#'         title = "Populatiedichtheid in Groningse gemeenten",
+#'         subtitle = "Met postcode-4 als overlay",
+#'         datalabels = FALSE,
+#'         colour = "umcgblauw",
+#'         linewidth = 1) |>
+#'   add_sf(geo_postcodes4 |> filter_geolocation(provincie == "Groningen"),
+#'          colour = "umcgoranje",
+#'          colour_fill = NA,
+#'          linewidth = 0.25)
 geo_gemeenten <- certegis::geo_gemeenten
 
-#' @rdname datasets
+#' @rdname gis-datasets
 #' @format NULL
 #' @export
 geo_ggdregios <- certegis::geo_ggdregios
 
-#' @rdname datasets
+#' @rdname gis-datasets
 #' @format NULL
 #' @export
 geo_nuts3 <- certegis::geo_nuts3
 
-#' @rdname datasets
+#' @rdname gis-datasets
 #' @format NULL
 #' @export
 geo_postcodes2 <- certegis::geo_postcodes2
 
-#' @rdname datasets
+#' @rdname gis-datasets
 #' @format NULL
 #' @export
 geo_postcodes3 <- certegis::geo_postcodes3
 
-#' @rdname datasets
+#' @rdname gis-datasets
 #' @format NULL
 #' @export
 geo_postcodes4 <- certegis::geo_postcodes4
 
-#' @rdname datasets
+#' @rdname gis-datasets
 #' @format NULL
 #' @export
 geo_postcodes6 <- certegis::geo_postcodes6
 
-#' @rdname datasets
+#' @rdname gis-datasets
 #' @format NULL
 #' @export
 geo_provincies <- certegis::geo_provincies
 
-#' @rdname datasets
+#' @rdname gis-datasets
 #' @format NULL
 #' @export
 postcodes <- certegis::postcodes
 
-#' @rdname datasets
+#' @rdname gis-datasets
 #' @format NULL
 #' @export
 postcodes4_afstanden <- certegis::postcodes4_afstanden

@@ -19,6 +19,7 @@
 \alias{add_type}
 \alias{add_line}
 \alias{add_smooth}
+\alias{add_sf}
 \alias{get_colour}
 \title{Objects exported from other packages}
 \keyword{internal}
@@ -29,6 +30,6 @@ below to see their documentation.
 \describe{
   \item{certegis}{\code{\link[certegis:GIS]{add_map}}, \code{\link[certegis:GIS]{as.sf}}, \code{\link[certegis]{cases_within_radius}}, \code{\link[certegis:GIS]{convert_to_metre_CRS28992}}, \code{\link[certegis:GIS]{degrees_to_sf}}, \code{\link[certegis:GIS]{filter_geolocation}}, \code{\link[certegis:GIS]{filter_sf}}, \code{\link[certegis:geocoding]{geocode}}, \code{\link[certegis:GIS]{is.sf}}, \code{\link[certegis:GIS]{latitude}}, \code{\link[certegis:GIS]{longitude}}, \code{\link[certegis:geocoding]{reverse_geocode}}}
 
-  \item{plot2}{\code{\link[plot2:add_type]{add_line}}, \code{\link[plot2:add_type]{add_smooth}}, \code{\link[plot2]{add_type}}, \code{\link[plot2:colour]{get_colour}}, \code{\link[plot2]{plot2}}}
+  \item{plot2}{\code{\link[plot2:add_type]{add_line}}, \code{\link[plot2:add_type]{add_sf}}, \code{\link[plot2:add_type]{add_smooth}}, \code{\link[plot2]{add_type}}, \code{\link[plot2:colour]{get_colour}}, \code{\link[plot2]{plot2}}}
 }}
 

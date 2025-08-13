@@ -81,6 +81,10 @@ plot2::add_line
 #' @export
 plot2::add_smooth
 
+#' @importFrom plot2 add_sf
+#' @export
+plot2::add_sf
+
 #' @importFrom plot2 get_colour
 #' @export
 plot2::get_colour
