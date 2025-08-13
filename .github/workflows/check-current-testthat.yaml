@@ -73,7 +73,7 @@ jobs:
           # use RStudio Package Manager to quickly install packages
           use-public-rspm: true
           # add our own R-universe to install other Certe packages
-          extra-repositories: 'https://certe-medical-epidemiology.r-universe.dev
+          extra-repositories: 'https://certe-medical-epidemiology.r-universe.dev'
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
