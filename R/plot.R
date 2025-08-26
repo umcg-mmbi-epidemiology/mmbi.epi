@@ -37,7 +37,7 @@
 #' p
 #'
 #' p +
-#'   plot_style_umcg(n = 2) +
+#'   scale_colour_umcg(n = 2) +
 #'   scale_fill_umcg(n = 2) +
 #'   labs(title = "UMCG colours")
 #'

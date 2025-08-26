@@ -5,7 +5,7 @@
 \alias{scale_fill_umcg}
 \alias{register_umcg_plot_style}
 \alias{unregister_umcg_plot_style}
-\title{UMCG Scale Colours}
+\title{UMCG Plot Style}
 \usage{
 scale_colour_umcg(..., n)
 
@@ -36,7 +36,7 @@ p <- mtcars |>
 p
 
 p +
-  plot_style_umcg(n = 2) +
+  scale_colour_umcg(n = 2) +
   scale_fill_umcg(n = 2) +
   labs(title = "UMCG colours")
 
