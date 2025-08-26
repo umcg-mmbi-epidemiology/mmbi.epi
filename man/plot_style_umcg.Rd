@@ -3,11 +3,17 @@
 \name{scale_colour_umcg}
 \alias{scale_colour_umcg}
 \alias{scale_fill_umcg}
+\alias{register_umcg_plot_style}
+\alias{unregister_umcg_plot_style}
 \title{UMCG Scale Colours}
 \usage{
 scale_colour_umcg(..., n)
 
 scale_fill_umcg(..., n)
+
+register_umcg_plot_style()
+
+unregister_umcg_plot_style()
 }
 \arguments{
 \item{...}{arguments passed on to \code{\link[ggplot2:scale_manual]{ggplot2::scale_colour_manual()}} or \code{\link[ggplot2:scale_manual]{ggplot2::scale_fill_manual()}}}
@@ -20,29 +26,26 @@ These are \code{ggplot2} helpers to add organisational colours to \code{ggplot} 
 \examples{
 library(ggplot2)
 
-mtcars |>
+p <- mtcars |>
   ggplot(aes(x = hp,
              y = mpg,
              colour = as.factor(vs)),
              fill = as.factor(vs)) +
   geom_point(size = 3) +
-  scale_colour_umcg(n = 3)
+  geom_smooth()
+p
 
-mtcars |>
-  ggplot(aes(x = hp,
-             y = mpg,
-             colour = as.factor(vs),
-             fill = as.factor(vs))) +
-  geom_point() +
-  geom_smooth(method="lm") +
-  scale_colour_umcg(n = 2) +
+p +
+  plot_style_umcg(n = 2) +
   scale_fill_umcg(n = 2) +
-  labs(title = "Non-UMCG-styled plot")
+  labs(title = "UMCG colours")
 
 # With plot2(), this all goes automatically with less code
 mtcars |>
-  plot2(hp, mpg, as.factor(vs),
-        title = "UMCG-styled plot",
-        subtitle = "(with the right font too; 'Outfit' from Google Fonts)") |>
-  add_smooth(method = "lm")
+  plot2(x = hp,
+        y = mpg,
+        category = as.factor(vs),
+        smooth = TRUE,
+        title = "Fully UMCG-styled plot",
+        subtitle = "(with the right font too; 'Outfit' from Google Fonts)")
 }
