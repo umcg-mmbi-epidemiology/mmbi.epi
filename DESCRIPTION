@@ -20,6 +20,9 @@ Depends:
   R (>= 4.2.0)
 Imports:
   certegis,
+  httr,
+  jsonlite,
+  openssl,
   plot2
 Suggests:
   AMR,
