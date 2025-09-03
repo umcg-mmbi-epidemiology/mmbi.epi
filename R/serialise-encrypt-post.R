@@ -172,7 +172,7 @@ deserialise <- function(object, decompress = TRUE) {
   }
   if (!isFALSE(decompress)) {
     tryCatch(object <- memDecompress(object, type = decompress),
-             error = function(e) stop("Problem during decompressing, do you need `decompress = FALSE`?\n-> ", conditionMessage(e), call. = FALSE))
+             error = function(e) stop("Problem during decompressing, do you need `decompress = FALSE` or is an encryption key invalid?\n-> ", conditionMessage(e), call. = FALSE))
   }
   if (is.raw(object)) {
     object <- rawToChar(object)
