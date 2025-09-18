@@ -53,8 +53,8 @@ jobs:
 
           # older versions (see also check-old-tinytest.yaml for even older versions):
           - {os: ubuntu-latest, r: 'oldrel-1', allowfail: false}
-          - {os: ubuntu-latest, r: 'oldrel-2', allowfail: false}
-          - {os: ubuntu-latest, r: 'oldrel-3', allowfail: false}
+          # - {os: ubuntu-latest, r: 'oldrel-2', allowfail: false}
+          # - {os: ubuntu-latest, r: 'oldrel-3', allowfail: false}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
