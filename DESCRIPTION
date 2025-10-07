@@ -1,6 +1,6 @@
 Package: mmbi.epi
 Title: Helper Functions for Unit Epidemiology & Data Science of UMCG MMBI Department
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(
   person(given = c("Matthijs", "S."), 
          family = "Berends",
@@ -34,5 +34,5 @@ Suggests:
 License: GPL-2 | file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Config/testthat/edition: 2
