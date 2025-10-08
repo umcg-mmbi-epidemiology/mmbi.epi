@@ -76,18 +76,19 @@ between local storage and SharePoint, including RDS import/export utilities.</p>
 <span>  ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">import_sharepoint_rds</span><span class="op">(</span></span>
-<span>  <span class="va">remote_path</span>,</span>
-<span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span><span class="fu">import_sharepoint_rds</span><span class="op">(</span><span class="va">remote_path</span>, ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">export_sharepoint_rds</span><span class="op">(</span><span class="va">object</span>, <span class="va">remote_path</span>, ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">open_sharepoint_analysis_file</span><span class="op">(</span><span class="va">remote_path</span>, ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">save_sharepoint_analysis_file</span><span class="op">(</span></span>
+<span>  local_path <span class="op">=</span> <span class="fu">get_current_file_path</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  remote_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">export_sharepoint_rds</span><span class="op">(</span></span>
-<span>  <span class="va">object</span>,</span>
-<span>  <span class="va">remote_path</span>,</span>
-<span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">get_current_file_path</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -107,7 +108,7 @@ between local storage and SharePoint, including RDS import/export utilities.</p>
 
 
 <dt id="arg-remote-path">remote_path<a class="anchor" aria-label="anchor" href="#arg-remote-path"></a></dt>
-<dd><p>Character scalar. Path to a file or folder on SharePoint (relative to the group drive root).</p></dd>
+<dd><p>Character scalar. Path to a file or folder on SharePoint (relative to the group drive root). For <code>save_sharepoint_analysis_file()</code> this will at default be taken from the first file line.</p></dd>
 
 
 <dt id="arg-destination">destination<a class="anchor" aria-label="anchor" href="#arg-destination"></a></dt>
@@ -137,23 +138,40 @@ to log in interactively.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Retrieve Microsoft 365 group</span></span></span>
-<span class="r-in"><span><span class="va">grp</span> <span class="op">&lt;-</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Access SharePoint drive</span></span></span>
-<span class="r-in"><span><span class="va">sp</span> <span class="op">&lt;-</span> <span class="fu">get_sharepoint</span><span class="op">(</span><span class="va">grp</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Download a file from SharePoint</span></span></span>
-<span class="r-in"><span><span class="fu">download_sharepoint_file</span><span class="op">(</span><span class="st">"Projecten/Overig/MS Graph API.R"</span>, <span class="st">"my_local_file.R"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Get from / Save to SharePoint ----------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Upload a local file to SharePoint</span></span></span>
-<span class="r-in"><span><span class="fu">upload_sharepoint_file</span><span class="op">(</span><span class="st">"my_local_file.R"</span>, <span class="st">"Projecten/Overig/MS Graph API.R"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Export data set to remote</span></span></span>
+<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">export_sharepoint_rds</span><span class="op">(</span><span class="st">"Projecten/Overig/mtcars.rds"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Import an RDS file directly from SharePoint</span></span></span>
+<span class="r-in"><span><span class="co"># Import data set from remote</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">import_sharepoint_rds</span><span class="op">(</span><span class="st">"Projecten/Overig/iris.rds"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Export an R object to SharePoint as an RDS file</span></span></span>
-<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">export_sharepoint_rds</span><span class="op">(</span><span class="st">"Projecten/Overig/mtcars.rds"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Open analysis file in RStudio from remote</span></span></span>
+<span class="r-in"><span><span class="fu">open_sharepoint_analysis_file</span><span class="op">(</span><span class="st">"Projecten/Overig/my_file.R"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Save current analysis file to remote</span></span></span>
+<span class="r-in"><span><span class="fu">save_sharepoint_analysis_file</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># or press the button in the Addins menu in RStudio</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Other Helper Functions -----------------------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Download a file from SharePoint</span></span></span>
+<span class="r-in"><span><span class="fu">download_sharepoint_file</span><span class="op">(</span><span class="st">"Projecten/Overig/my_remote_file.csv"</span>, <span class="st">"my_local_file.csv"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Upload a local file to SharePoint</span></span></span>
+<span class="r-in"><span><span class="fu">upload_sharepoint_file</span><span class="op">(</span><span class="st">"my_local_file.csv"</span>, <span class="st">"Projecten/Overig/my_remote_file.csv"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Access Teams</span></span></span>
+<span class="r-in"><span><span class="va">teams</span> <span class="op">&lt;-</span> <span class="fu">get_teams</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Send a message</span></span></span>
+<span class="r-in"><span><span class="va">teams</span><span class="op">$</span><span class="fu">get_channel</span><span class="op">(</span><span class="st">"General"</span><span class="op">)</span><span class="op">$</span><span class="fu">send_message</span><span class="op">(</span><span class="st">"This is message from R"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Access Planner</span></span></span>
+<span class="r-in"><span><span class="va">planner</span> <span class="op">&lt;-</span> <span class="fu">get_planner</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">planner</span><span class="op">$</span><span class="fu">list_tasks</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
