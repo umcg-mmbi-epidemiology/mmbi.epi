@@ -10,6 +10,9 @@
 \alias{upload_sharepoint_file}
 \alias{import_sharepoint_rds}
 \alias{export_sharepoint_rds}
+\alias{open_sharepoint_analysis_file}
+\alias{save_sharepoint_analysis_file}
+\alias{get_current_file_path}
 \title{Microsoft 365 Group and SharePoint Utilities}
 \usage{
 get_ms365_group(group_name = "MMBI Unit Epidemiologie & Data Science")
@@ -38,18 +41,19 @@ upload_sharepoint_file(
   ms365_group = get_ms365_group()
 )
 
-import_sharepoint_rds(
-  remote_path,
-  overwrite = FALSE,
+import_sharepoint_rds(remote_path, ms365_group = get_ms365_group())
+
+export_sharepoint_rds(object, remote_path, ms365_group = get_ms365_group())
+
+open_sharepoint_analysis_file(remote_path, ms365_group = get_ms365_group())
+
+save_sharepoint_analysis_file(
+  local_path = get_current_file_path(),
+  remote_path = NULL,
   ms365_group = get_ms365_group()
 )
 
-export_sharepoint_rds(
-  object,
-  remote_path,
-  overwrite = FALSE,
-  ms365_group = get_ms365_group()
-)
+get_current_file_path()
 }
 \arguments{
 \item{group_name}{Character scalar. Name of the Microsoft 365 group to connect to. Defaults to \code{"MMBI Unit Epidemiologie & Data Science"}.}
@@ -58,7 +62,7 @@ export_sharepoint_rds(
 
 \item{plan_id}{Identifier of the Planner.}
 
-\item{remote_path}{Character scalar. Path to a file or folder on SharePoint (relative to the group drive root).}
+\item{remote_path}{Character scalar. Path to a file or folder on SharePoint (relative to the group drive root). For \code{save_sharepoint_analysis_file()} this will at default be taken from the first file line.}
 
 \item{destination}{Character scalar. Local path where a SharePoint file should be downloaded.}
 
@@ -84,22 +88,39 @@ to log in interactively.
 }
 \examples{
 \dontrun{
-# Retrieve Microsoft 365 group
-grp <- get_ms365_group()
 
-# Access SharePoint drive
-sp <- get_sharepoint(grp)
 
-# Download a file from SharePoint
-download_sharepoint_file("Projecten/Overig/MS Graph API.R", "my_local_file.R")
+# Get from / Save to SharePoint ----------------------------------------
 
-# Upload a local file to SharePoint
-upload_sharepoint_file("my_local_file.R", "Projecten/Overig/MS Graph API.R")
+# Export data set to remote
+mtcars |> export_sharepoint_rds("Projecten/Overig/mtcars.rds")
 
-# Import an RDS file directly from SharePoint
+# Import data set from remote
 df <- import_sharepoint_rds("Projecten/Overig/iris.rds")
 
-# Export an R object to SharePoint as an RDS file
-mtcars |> export_sharepoint_rds("Projecten/Overig/mtcars.rds")
+# Open analysis file in RStudio from remote
+open_sharepoint_analysis_file("Projecten/Overig/my_file.R")
+
+# Save current analysis file to remote
+save_sharepoint_analysis_file()
+# or press the button in the Addins menu in RStudio
+
+
+# Other Helper Functions -----------------------------------------------
+
+# Download a file from SharePoint
+download_sharepoint_file("Projecten/Overig/my_remote_file.csv", "my_local_file.csv")
+
+# Upload a local file to SharePoint
+upload_sharepoint_file("my_local_file.csv", "Projecten/Overig/my_remote_file.csv")
+
+# Access Teams
+teams <- get_teams()
+# Send a message
+teams$get_channel("General")$send_message("This is message from R")
+
+# Access Planner
+planner <- get_planner()
+planner$list_tasks()
 }
 }

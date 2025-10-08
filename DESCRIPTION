@@ -19,15 +19,18 @@ Additional_repositories: https://certe-medical-epidemiology.r-universe.dev
 Depends: 
   R (>= 4.2.0)
 Imports:
+  AzureGraph,
   certegis,
   httr,
   jsonlite,
+  Microsoft365R,
   openssl,
   plot2
 Suggests:
   AMR,
   ggplot2,
   sf,
+  rstudioapi,
   showtext,
   showtextdb,
   sysfonts
