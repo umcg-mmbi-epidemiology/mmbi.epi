@@ -105,8 +105,15 @@ get_planner <- function(ms365_group = get_ms365_group(), plan_id = "xHLwHUqf_UKo
 #' @rdname ms365
 #' @importFrom Microsoft365R ms_drive
 #' @export
-get_sharepoint <- function(ms365_group = get_ms365_group()) {
+get_drive <- function(ms365_group = get_ms365_group()) {
   ms_drive$new(ms365_group$token, "umcgonline", ms365_group$do_operation("drive"))
+}
+
+#' @rdname ms365
+#' @importFrom Microsoft365R ms_site
+#' @export
+get_sharepoint_site <- function(ms365_group = get_ms365_group()) {
+  ms_site$new(ms365_group$token, "umcgonline", ms365_group$do_operation("sites/root"))
 }
 
 #' @rdname ms365
@@ -120,21 +127,21 @@ get_teams <- function(ms365_group = get_ms365_group()) {
 
 #' @rdname ms365
 #' @export
-get_sharepoint_file <- function(remote_path, ms365_group = get_ms365_group()) {
-  get_sharepoint(ms365_group)$get_item(remote_path)
+get_drive_file <- function(remote_path, ms365_group = get_ms365_group()) {
+  get_drive(ms365_group)$get_item(remote_path)
 }
 
 #' @rdname ms365
 #' @export
 download_sharepoint_file <- function(remote_path, destination, overwrite = FALSE, ms365_group = get_ms365_group()) {
-  sharepoint_file <- get_sharepoint_file(remote_path, ms365_group = ms365_group)
+  sharepoint_file <- get_drive_file(remote_path, ms365_group = ms365_group)
   sharepoint_file$download(destination, overwrite = overwrite)
 }
 
 #' @rdname ms365
 #' @export
 upload_sharepoint_file <- function(local_path, remote_path, ms365_group = get_ms365_group()) {
-  get_sharepoint(ms365_group)$upload_file(local_path, remote_path)
+  get_drive(ms365_group)$upload_file(local_path, remote_path)
 }
 
 #' @rdname ms365

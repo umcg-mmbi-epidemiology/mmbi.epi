@@ -1,6 +1,6 @@
 Package: mmbi.epi
 Title: Helper Functions for Unit Epidemiology & Data Science of UMCG MMBI Department
-Version: 0.0.2
+Version: 0.0.3
 Authors@R: c(
   person(given = c("Matthijs", "S."), 
          family = "Berends",
@@ -21,13 +21,16 @@ Depends:
 Imports:
   AzureGraph,
   certegis,
+  dplyr,
   httr,
   jsonlite,
   Microsoft365R,
+  odbc,
   openssl,
   plot2
 Suggests:
   AMR,
+  DBI,
   ggplot2,
   sf,
   rstudioapi,

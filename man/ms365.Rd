@@ -3,9 +3,10 @@
 \name{get_ms365_group}
 \alias{get_ms365_group}
 \alias{get_planner}
-\alias{get_sharepoint}
+\alias{get_drive}
+\alias{get_sharepoint_site}
 \alias{get_teams}
-\alias{get_sharepoint_file}
+\alias{get_drive_file}
 \alias{download_sharepoint_file}
 \alias{upload_sharepoint_file}
 \alias{import_sharepoint_rds}
@@ -22,11 +23,13 @@ get_planner(
   plan_id = "xHLwHUqf_UKoTxaPT6gh5pYAHsuB"
 )
 
-get_sharepoint(ms365_group = get_ms365_group())
+get_drive(ms365_group = get_ms365_group())
+
+get_sharepoint_site(ms365_group = get_ms365_group())
 
 get_teams(ms365_group = get_ms365_group())
 
-get_sharepoint_file(remote_path, ms365_group = get_ms365_group())
+get_drive_file(remote_path, ms365_group = get_ms365_group())
 
 download_sharepoint_file(
   remote_path,
