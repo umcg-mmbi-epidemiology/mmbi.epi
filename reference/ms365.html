@@ -15,7 +15,7 @@ between local storage and SharePoint, including RDS import/export utilities."></
 
     <a class="navbar-brand me-2" href="../index.html">mmbi.epi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,11 +57,13 @@ between local storage and SharePoint, including RDS import/export utilities.</p>
 <span>  plan_id <span class="op">=</span> <span class="st">"xHLwHUqf_UKoTxaPT6gh5pYAHsuB"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">get_sharepoint</span><span class="op">(</span>ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">get_drive</span><span class="op">(</span>ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">get_sharepoint_site</span><span class="op">(</span>ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">get_teams</span><span class="op">(</span>ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">get_sharepoint_file</span><span class="op">(</span><span class="va">remote_path</span>, ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">get_drive_file</span><span class="op">(</span><span class="va">remote_path</span>, ms365_group <span class="op">=</span> <span class="fu">get_ms365_group</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">download_sharepoint_file</span><span class="op">(</span></span>
 <span>  <span class="va">remote_path</span>,</span>
