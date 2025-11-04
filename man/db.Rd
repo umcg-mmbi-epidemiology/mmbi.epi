@@ -2,38 +2,41 @@
 % Please edit documentation in R/db.R
 \name{connect_db}
 \alias{connect_db}
+\alias{disconnect_db}
 \alias{glims_tbl}
 \alias{glims_join_tbl}
-\alias{disconnect_db}
-\title{Database Access}
+\title{GLIMS Database Access}
 \usage{
 connect_db()
 
-glims_tbl(con, table_name, prefix = "ORAGLIMS")
+disconnect_db(con)
+
+glims_tbl(con, table_name, schema = "ORAGLIMS")
 
 glims_join_tbl(
   .data,
   table_name,
   by = NULL,
   ...,
+  cols_to_keep = NULL,
   type = "left",
-  prefix = "ORAGLIMS"
+  schema = "ORAGLIMS"
 )
-
-disconnect_db(con)
 }
 \arguments{
 \item{con}{Connection object.}
 
 \item{table_name}{Name of the table to query.}
 
-\item{prefix}{Prefix string to prepend to \code{table_name} internally.}
+\item{schema}{Database schema; the upper structure name of \code{table_name}.}
 
 \item{.data}{SQL data object.}
 
 \item{by}{Column name(s) to join by. Can be a named vector to allow different names:\cr  \code{by = c("col_A" = "col_B")}.}
 
 \item{...}{Arguments passed on the join functions.}
+
+\item{cols_to_keep}{Columns to keep of the joined column. Columns used in \code{by} will always be included. Supports \link[tidyselect:starts_with]{tidyselect language}.}
 
 \item{type}{Direction of the join, defaults to \code{"left"}.
 \itemize{
