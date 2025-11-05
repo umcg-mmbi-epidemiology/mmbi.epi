@@ -19,9 +19,10 @@
 #' GLIMS Database Access
 #'
 #' Establishes a connection to the GLIMS Oracle database using environment variables for all configuration parameters. This function is designed for use in secure environments such as Posit Workbench, where credentials and driver paths are stored outside the source code.
+#' @param db Database to connect to.
 #' @section Environment Variables:
 #'
-#' The following environment variables must be defined before using this function:
+#' When `db` is set to `"Oracle"`, the following environment variables must be defined before using this function:
 #'
 #' - **`MMBI_EPIDS_DRIVER`** - Full path to, or name of, the Oracle ODBC driver shared library
 #' - **`MMBI_EPIDS_HOST`** - Hostname or IP address of the Oracle database server
@@ -57,14 +58,13 @@
 #' # download first 500 rows
 #' first_500 <- conn |>
 #'   glims_tbl("ANTIBIOTICRESULT") |>
-#'   head(500) |>
-#'   collect()
+#'   retrieve(500)
 #'
 #' # dplyr functions are automatically translated into SQL
 #' conn |>
 #'   glims_tbl("ANTIBIOTICRESULT") |>
 #'   filter(ABRS_RISRAWVALUE == 3) |>
-#'   show_query() # use collect() instead to download
+#'   show_query() # use collect() or retrieve() instead to download
 #'
 #' # more advanced queries can still run server-side
 #' my_count <- conn |>
@@ -75,7 +75,7 @@
 #'   collect()       # then immediately run and download data
 #'
 #' # join to other columns server-side
-#' joined_tbl <- conn |>
+#' conn |>
 #'   glims_tbl("ANTIBIOTICRESULT") |>
 #'   glims_join_tbl("ANOTHERTABLE", by = "some_column") |>
 #'   show_query()
@@ -85,17 +85,34 @@
 #'
 #' disconnect_db(conn)
 #'
-#'
 #' }
-connect_db <- function() {
-  dbConnect(
-    odbc::odbc(),
-    Driver   = Sys.getenv("MMBI_EPIDS_DRIVER"),
-    Host     = Sys.getenv("MMBI_EPIDS_HOST"),
-    Port     = Sys.getenv("MMBI_EPIDS_PORT"),
-    SVC      = Sys.getenv("MMBI_EPIDS_SVC"),
-    UID      = Sys.getenv("MMBI_EPIDS_USER"),
-    PWD      = Sys.getenv("MMBI_EPIDS_PASS"))
+#'
+#'
+#' # Other ----------------------------------------------------------------
+#'
+#' datetime_to_oracle_julian(Sys.Date())
+#'
+#' Sys.Date()
+#' Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
+#'
+#' Sys.time()
+#' Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
+connect_db <- function(db = "Oracle") {
+  if (db == "Oracle") {
+    dbConnect(
+      odbc::odbc(),
+      Driver   = Sys.getenv("MMBI_EPIDS_DRIVER"),
+      Host     = Sys.getenv("MMBI_EPIDS_HOST"),
+      Port     = Sys.getenv("MMBI_EPIDS_PORT"),
+      SVC      = Sys.getenv("MMBI_EPIDS_SVC"),
+      UID      = Sys.getenv("MMBI_EPIDS_USER"),
+      PWD      = Sys.getenv("MMBI_EPIDS_PASS")
+    )
+    # } else if (db == "...") {
+    #
+  } else {
+    stop("Invalid database")
+  }
 }
 
 #' @rdname db
@@ -115,26 +132,24 @@ glims_tbl <- function(con, table_name, schema = "ORAGLIMS") {
   con |> tbl(I(paste0(schema, ".", table_name)))
 }
 
-#' @param .data SQL data object.
+#' @param db_object SQL data object.
 #' @param by Column name(s) to join by. Can be a named vector to allow different names:\cr  `by = c("col_A" = "col_B")`.
 #' @param ... Arguments passed on the join functions.
-#' @param cols_to_keep Columns to keep of the joined column. Columns used in `by` will always be included. Supports [tidyselect language][tidyselect::starts_with()].
 #' @param type Direction of the join, defaults to `"left"`.
 #' * [`"inner"`][dplyr::inner_join()]: returns matched x rows.
 #' * [`"left"`][dplyr::left_join()]: returns all x rows.
 #' * [`"right"`][dplyr::right_join()]: returns matched of x rows, followed by unmatched y rows.
 #' * [`"full"`][dplyr::full_join()]: returns all x rows, followed by unmatched y rows.
 #' @rdname db
-#' @importFrom dplyr left_join right_join full_join inner_join select any_of collect
+#' @importFrom dplyr left_join right_join full_join inner_join
 #' @export
-glims_join_tbl <- function(.data,
+glims_join_tbl <- function(db_object,
                            table_name,
                            by = NULL,
                            ...,
-                           cols_to_keep = NULL,
                            type = "left",
                            schema = "ORAGLIMS") {
-  con <- .data[["src"]]$con
+  con <- db_object[["src"]]$con
 
   if (interactive()) {
     message("Joining table '", table_name, "'...", appendLF = FALSE)
@@ -142,19 +157,14 @@ glims_join_tbl <- function(.data,
 
   table_y <- con |> glims_tbl(table_name, schema)
 
-  if (tryCatch(!is.null(cols_to_keep), error = function(e) TRUE)) {
-    keep_cols <- table_y |> utils::head(0) |> collect() |> select({{ cols_to_keep }}) |> colnames()
-    table_y <- table_y |> select(any_of(c(names(by), unname(by), keep_cols)))
-  }
-
   if (type == "left") {
-    out <- .data |> left_join(table_y, by = by, ...)
+    out <- db_object |> left_join(table_y, by = by, ...)
   } else if (type == "right") {
-    out <- .data |> right_join(table_y, by = by, ...)
+    out <- db_object |> right_join(table_y, by = by, ...)
   } else if (type == "full") {
-    out <- .data |> full_join(table_y, by = by, ...)
+    out <- db_object |> full_join(table_y, by = by, ...)
   } else if (type == "inner") {
-    out <- .data |> inner_join(table_y, by = by, ...)
+    out <- db_object |> inner_join(table_y, by = by, ...)
   } else {
     stop("Only supported joins: left, right, full, inner")
   }
@@ -165,6 +175,94 @@ glims_join_tbl <- function(.data,
 
   out
 }
+
+#' @param n Number of rows to retrieve.
+#' @rdname db
+#' @importFrom dplyr collect
+#' @export
+preview <- function(db_object, n = 100) {
+  db_object |>
+    utils::head(n) |>
+    collect()
+}
+
+#' @rdname db
+#' @param x Numeric vector or data.frame, to convert Oracle Julian days to common dates. In case of data frames, only columns with numeric values that have Julian days between 1900-01-01 and 2075-01-01 will be converted.
+#' @param tz Target time zone.
+#' @export
+oracle_julian_to_datetime <- function(x, tz = "Europe/Amsterdam") {
+  if (is.list(x)) {
+    # list and thus also data.frames
+    for (i in seq_along(x)) {
+      col <- x[[i]]
+      # detect likely Julian values, these cover dates between 1900-01-01 and 2100-01-01
+      if (!all(is.na(col)) && min(col, na.rm = TRUE) >= 2415021 && max(col, na.rm = TRUE) <= 2488070) {
+        x[[i]] <- oracle_julian_to_datetime(col, tz = tz)
+      }
+    }
+    return(x)
+  }
+
+  # actual function
+  x <- as.numeric(x)
+  if (all(x == floor(x), na.rm = TRUE)) {
+    out <- as.Date(x - 2440588, origin = "1970-01-01")
+  } else {
+    out <- as.POSIXct((x - 2440588) * 60 * 60 * 24, origin = "1970-01-01", tz = tz)
+  }
+  out
+}
+
+#' @rdname db
+#' @export
+datetime_to_oracle_julian <- function(x) {
+  if (inherits(x, "Date")) {
+    x_num <- as.numeric(x)
+  } else {
+    x_num <- as.numeric(x) / 60 / 60 / 24
+  }
+  x_num + 2440588
+}
+
+#' @param qry Query to run.
+#' @param n Maximum number of rows to return.
+#' @importFrom dplyr collect mutate case_when select everything
+#' @rdname db
+#' @export
+retrieve <- function(qry, n) {
+  start_the_clock <- Sys.time()
+
+  message("[", format(Sys.time()), "] Running query...", appendLF = FALSE)
+  if (is.infinite(n)) {
+    out <- qry |> collect()
+  } else {
+    out <- qry |> utils::head(n) |> collect()
+  }
+  message("OK")
+
+  message("[", format(Sys.time()), "] Converting Oracle Julian days...", appendLF = FALSE)
+  out <- out |> oracle_julian_to_datetime()
+  message("OK")
+
+  # message("[", format(Sys.time()), "] Post-processing...", appendLF = FALSE)
+  # out <- out |>
+  #   # PATIENT DEMOGRAPHY
+  #   mutate(patient_sex = case_when(patient_sex == 1 ~ "M",
+  #                                  patient_sex == 2 ~ "V",
+  #                                  TRUE ~ "O"),
+  #          patient_age = AMR::age(patient_dob, order_received),
+  #          .after = patient_sex) |>
+  #   # TEST RESULTS
+  #
+  #   # SELECTION
+  #   select(everything())
+  # message("OK")
+
+  message("\nDone in ", format(round(difftime(Sys.time(), start_the_clock), 2)),
+          ", returning ", format(NROW(out), big.mark = ","), " x ", format(NCOL(out), big.mark = ","), " observations")
+  out
+}
+
 
 
 # get_glims_results <- function(con, ...) {

@@ -5,38 +5,49 @@
 \alias{disconnect_db}
 \alias{glims_tbl}
 \alias{glims_join_tbl}
+\alias{preview}
+\alias{oracle_julian_to_datetime}
+\alias{datetime_to_oracle_julian}
+\alias{retrieve}
 \title{GLIMS Database Access}
 \usage{
-connect_db()
+connect_db(db = "Oracle")
 
 disconnect_db(con)
 
 glims_tbl(con, table_name, schema = "ORAGLIMS")
 
 glims_join_tbl(
-  .data,
+  db_object,
   table_name,
   by = NULL,
   ...,
-  cols_to_keep = NULL,
   type = "left",
   schema = "ORAGLIMS"
 )
+
+preview(db_object, n = 100)
+
+oracle_julian_to_datetime(x, tz = "Europe/Amsterdam")
+
+datetime_to_oracle_julian(x)
+
+retrieve(qry, n)
 }
 \arguments{
+\item{db}{Database to connect to.}
+
 \item{con}{Connection object.}
 
 \item{table_name}{Name of the table to query.}
 
 \item{schema}{Database schema; the upper structure name of \code{table_name}.}
 
-\item{.data}{SQL data object.}
+\item{db_object}{SQL data object.}
 
 \item{by}{Column name(s) to join by. Can be a named vector to allow different names:\cr  \code{by = c("col_A" = "col_B")}.}
 
 \item{...}{Arguments passed on the join functions.}
-
-\item{cols_to_keep}{Columns to keep of the joined column. Columns used in \code{by} will always be included. Supports \link[tidyselect:starts_with]{tidyselect language}.}
 
 \item{type}{Direction of the join, defaults to \code{"left"}.
 \itemize{
@@ -45,6 +56,14 @@ glims_join_tbl(
 \item \code{\link[dplyr:mutate-joins]{"right"}}: returns matched of x rows, followed by unmatched y rows.
 \item \code{\link[dplyr:mutate-joins]{"full"}}: returns all x rows, followed by unmatched y rows.
 }}
+
+\item{n}{Maximum number of rows to return.}
+
+\item{x}{Numeric vector or data.frame, to convert Oracle Julian days to common dates. In case of data frames, only columns with numeric values that have Julian days between 1900-01-01 and 2075-01-01 will be converted.}
+
+\item{tz}{Target time zone.}
+
+\item{qry}{Query to run.}
 }
 \value{
 Returns a live \code{DBIConnection} object that can be used with \code{DBI}, \code{dplyr}, or \code{dbplyr} for querying and manipulating data.
@@ -55,7 +74,7 @@ Establishes a connection to the GLIMS Oracle database using environment variable
 \section{Environment Variables}{
 
 
-The following environment variables must be defined before using this function:
+When \code{db} is set to \code{"Oracle"}, the following environment variables must be defined before using this function:
 \itemize{
 \item \strong{\code{MMBI_EPIDS_DRIVER}} - Full path to, or name of, the Oracle ODBC driver shared library
 \item \strong{\code{MMBI_EPIDS_HOST}} - Hostname or IP address of the Oracle database server
@@ -88,14 +107,13 @@ library(dplyr)
 # download first 500 rows
 first_500 <- conn |>
   glims_tbl("ANTIBIOTICRESULT") |>
-  head(500) |>
-  collect()
+  retrieve(500)
 
 # dplyr functions are automatically translated into SQL
 conn |>
   glims_tbl("ANTIBIOTICRESULT") |>
   filter(ABRS_RISRAWVALUE == 3) |>
-  show_query() # use collect() instead to download
+  show_query() # use collect() or retrieve() instead to download
 
 # more advanced queries can still run server-side
 my_count <- conn |>
@@ -106,7 +124,7 @@ my_count <- conn |>
   collect()       # then immediately run and download data
 
 # join to other columns server-side
-joined_tbl <- conn |>
+conn |>
   glims_tbl("ANTIBIOTICRESULT") |>
   glims_join_tbl("ANOTHERTABLE", by = "some_column") |>
   show_query()
@@ -116,8 +134,18 @@ joined_tbl <- conn |>
 
 disconnect_db(conn)
 
-
 }
+
+
+# Other ----------------------------------------------------------------
+
+datetime_to_oracle_julian(Sys.Date())
+
+Sys.Date()
+Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
+
+Sys.time()
+Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
 }
 \seealso{
 \code{\link[DBI:dbConnect]{DBI::dbConnect()}}, \code{\link[odbc:dbConnect-OdbcDriver-method]{odbc::odbc()}}
