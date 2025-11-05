@@ -38,28 +38,39 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">connect_db</span><span class="op">(</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">connect_db</span><span class="op">(</span>db <span class="op">=</span> <span class="st">"Oracle"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">disconnect_db</span><span class="op">(</span><span class="va">con</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">glims_tbl</span><span class="op">(</span><span class="va">con</span>, <span class="va">table_name</span>, schema <span class="op">=</span> <span class="st">"ORAGLIMS"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">glims_join_tbl</span><span class="op">(</span></span>
-<span>  <span class="va">.data</span>,</span>
+<span>  <span class="va">db_object</span>,</span>
 <span>  <span class="va">table_name</span>,</span>
 <span>  by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span>,</span>
-<span>  cols_to_keep <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  type <span class="op">=</span> <span class="st">"left"</span>,</span>
 <span>  schema <span class="op">=</span> <span class="st">"ORAGLIMS"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">preview</span><span class="op">(</span><span class="va">db_object</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">oracle_julian_to_datetime</span><span class="op">(</span><span class="va">x</span>, tz <span class="op">=</span> <span class="st">"Europe/Amsterdam"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">retrieve</span><span class="op">(</span><span class="va">qry</span>, <span class="va">n</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-con">con<a class="anchor" aria-label="anchor" href="#arg-con"></a></dt>
+<dl><dt id="arg-db">db<a class="anchor" aria-label="anchor" href="#arg-db"></a></dt>
+<dd><p>Database to connect to.</p></dd>
+
+
+<dt id="arg-con">con<a class="anchor" aria-label="anchor" href="#arg-con"></a></dt>
 <dd><p>Connection object.</p></dd>
 
 
@@ -71,7 +82,7 @@
 <dd><p>Database schema; the upper structure name of <code>table_name</code>.</p></dd>
 
 
-<dt id="arg--data">.data<a class="anchor" aria-label="anchor" href="#arg--data"></a></dt>
+<dt id="arg-db-object">db_object<a class="anchor" aria-label="anchor" href="#arg-db-object"></a></dt>
 <dd><p>SQL data object.</p></dd>
 
 
@@ -83,16 +94,28 @@
 <dd><p>Arguments passed on the join functions.</p></dd>
 
 
-<dt id="arg-cols-to-keep">cols_to_keep<a class="anchor" aria-label="anchor" href="#arg-cols-to-keep"></a></dt>
-<dd><p>Columns to keep of the joined column. Columns used in <code>by</code> will always be included. Supports <a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">tidyselect language</a>.</p></dd>
-
-
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
 <dd><p>Direction of the join, defaults to <code>"left"</code>.</p><ul><li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"inner"</a></code>: returns matched x rows.</p></li>
 <li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"left"</a></code>: returns all x rows.</p></li>
 <li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"right"</a></code>: returns matched of x rows, followed by unmatched y rows.</p></li>
 <li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"full"</a></code>: returns all x rows, followed by unmatched y rows.</p></li>
 </ul></dd>
+
+
+<dt id="arg-n">n<a class="anchor" aria-label="anchor" href="#arg-n"></a></dt>
+<dd><p>Maximum number of rows to return.</p></dd>
+
+
+<dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dd><p>Numeric vector or data.frame, to convert Oracle Julian days to common dates. In case of data frames, only columns with numeric values that have Julian days between 1900-01-01 and 2075-01-01 will be converted.</p></dd>
+
+
+<dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>
+<dd><p>Target time zone.</p></dd>
+
+
+<dt id="arg-qry">qry<a class="anchor" aria-label="anchor" href="#arg-qry"></a></dt>
+<dd><p>Query to run.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -104,7 +127,7 @@
 
 
 
-<p>The following environment variables must be defined before using this function:</p><ul><li><p><strong><code>MMBI_EPIDS_DRIVER</code></strong> - Full path to, or name of, the Oracle ODBC driver shared library</p></li>
+<p>When <code>db</code> is set to <code>"Oracle"</code>, the following environment variables must be defined before using this function:</p><ul><li><p><strong><code>MMBI_EPIDS_DRIVER</code></strong> - Full path to, or name of, the Oracle ODBC driver shared library</p></li>
 <li><p><strong><code>MMBI_EPIDS_HOST</code></strong> - Hostname or IP address of the Oracle database server</p></li>
 <li><p><strong><code>MMBI_EPIDS_PORT</code></strong> - Port number for the Oracle service (typically <code>1521</code>)</p></li>
 <li><p><strong><code>MMBI_EPIDS_SVC</code></strong> - Oracle Service Name (SVC) or SID identifying the database instance</p></li>
@@ -138,14 +161,13 @@
 <span class="r-in"><span><span class="co"># download first 500 rows</span></span></span>
 <span class="r-in"><span><span class="va">first_500</span> <span class="op">&lt;-</span> <span class="va">conn</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">glims_tbl</span><span class="op">(</span><span class="st">"ANTIBIOTICRESULT"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">500</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">retrieve</span><span class="op">(</span><span class="fl">500</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># dplyr functions are automatically translated into SQL</span></span></span>
 <span class="r-in"><span><span class="va">conn</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">glims_tbl</span><span class="op">(</span><span class="st">"ANTIBIOTICRESULT"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">ABRS_RISRAWVALUE</span> <span class="op">==</span> <span class="fl">3</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">show_query</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># use collect() instead to download</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">show_query</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># use collect() or retrieve() instead to download</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># more advanced queries can still run server-side</span></span></span>
 <span class="r-in"><span><span class="va">my_count</span> <span class="op">&lt;-</span> <span class="va">conn</span> <span class="op">|&gt;</span></span></span>
@@ -156,7 +178,7 @@
 <span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span>       <span class="co"># then immediately run and download data</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># join to other columns server-side</span></span></span>
-<span class="r-in"><span><span class="va">joined_tbl</span> <span class="op">&lt;-</span> <span class="va">conn</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span><span class="va">conn</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">glims_tbl</span><span class="op">(</span><span class="st">"ANTIBIOTICRESULT"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">glims_join_tbl</span><span class="op">(</span><span class="st">"ANOTHERTABLE"</span>, by <span class="op">=</span> <span class="st">"some_column"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/explain.html" class="external-link">show_query</a></span><span class="op">(</span><span class="op">)</span></span></span>
@@ -166,8 +188,23 @@
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">disconnect_db</span><span class="op">(</span><span class="va">conn</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Other ----------------------------------------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2460985</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-05"</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">oracle_julian_to_datetime</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-05"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-05 22:13:22 UTC"</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">oracle_julian_to_datetime</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-05 23:13:22 CET"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
