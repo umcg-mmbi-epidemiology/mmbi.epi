@@ -8,7 +8,10 @@
 \alias{preview}
 \alias{oracle_julian_to_datetime}
 \alias{datetime_to_oracle_julian}
+\alias{build_query}
 \alias{retrieve}
+\alias{get_glims_data}
+\alias{original_query}
 \title{GLIMS Database Access}
 \usage{
 connect_db(db = "Oracle")
@@ -18,7 +21,7 @@ disconnect_db(con)
 glims_tbl(con, table_name, schema = "ORAGLIMS")
 
 glims_join_tbl(
-  db_object,
+  qry,
   table_name,
   by = NULL,
   ...,
@@ -26,13 +29,34 @@ glims_join_tbl(
   schema = "ORAGLIMS"
 )
 
-preview(db_object, n = 100)
+preview(qry, n = 100)
 
 oracle_julian_to_datetime(x, tz = "Europe/Amsterdam")
 
 datetime_to_oracle_julian(x)
 
-retrieve(qry, n)
+build_query(con, qry_type)
+
+retrieve(
+  qry,
+  limit = Inf,
+  convert_julian = TRUE,
+  convert_logicals = TRUE,
+  convert_column_names = TRUE
+)
+
+get_glims_data(
+  date_range,
+  ...,
+  convert_julian = TRUE,
+  convert_logicals = TRUE,
+  convert_column_names = TRUE,
+  limit = Inf,
+  qry_type = c("results", "orders"),
+  db = "Oracle"
+)
+
+original_query(x)
 }
 \arguments{
 \item{db}{Database to connect to.}
@@ -43,11 +67,14 @@ retrieve(qry, n)
 
 \item{schema}{Database schema; the upper structure name of \code{table_name}.}
 
-\item{db_object}{SQL data object.}
+\item{qry}{A \code{tbl_dbi} object representing the database query.}
 
 \item{by}{Column name(s) to join by. Can be a named vector to allow different names:\cr  \code{by = c("col_A" = "col_B")}.}
 
-\item{...}{Arguments passed on the join functions.}
+\item{...}{.  * \code{\link[=get_glims_data]{get_glims_data()}}: Arguments passed on the \code{WHERE} clause in the query. Supports \code{dplyr} language.
+\itemize{
+\item \code{\link[=glims_join_tbl]{glims_join_tbl()}}: Arguments passed on the join functions.
+}}
 
 \item{type}{Direction of the join, defaults to \code{"left"}.
 \itemize{
@@ -57,13 +84,23 @@ retrieve(qry, n)
 \item \code{\link[dplyr:mutate-joins]{"full"}}: returns all x rows, followed by unmatched y rows.
 }}
 
-\item{n}{Maximum number of rows to return.}
+\item{n}{Number of rows to collect.}
 
-\item{x}{Numeric vector or data.frame, to convert Oracle Julian days to common dates. In case of data frames, only columns with numeric values that have Julian days between 1900-01-01 and 2075-01-01 will be converted.}
+\item{x}{Numeric vector or data.frame, to convert Oracle Julian days to common dates. In case of data frames, only columns with numeric values that have Julian days between 1900-01-01 and 2100-01-01 will be converted.}
 
 \item{tz}{Target time zone.}
 
-\item{qry}{Query to run.}
+\item{qry_type}{Type of query, see \verb{Query Types} below.}
+
+\item{limit}{Maximum number of rows to return. The end result will probably have fewer results due to post-process data cleaning; the \code{limit} setting only applies to the original database query.}
+
+\item{convert_julian}{Logical, whether to convert Oracle Julian date fields to Date or POSIXct.}
+
+\item{convert_logicals}{Logical, whether to convert binary numeric fields (0/1) to logicals.}
+
+\item{convert_column_names}{Logical, whether to rename column names using a lookup table from the package.}
+
+\item{date_range}{Date range, can be length 1 or 2 (or more to use the min/max) to filter the \code{ORD_RECEIPTTIME} column. Supports date/time, date, and years. Use \code{NULL} to set no date filter.}
 }
 \value{
 Returns a live \code{DBIConnection} object that can be used with \code{DBI}, \code{dplyr}, or \code{dbplyr} for querying and manipulating data.
@@ -85,6 +122,18 @@ When \code{db} is set to \code{"Oracle"}, the following environment variables mu
 }
 
 The environment variables are read at runtime using \code{Sys.getenv()} and passed to \code{\link[DBI:dbConnect]{DBI::dbConnect()}}. This approach ensures credentials are never exposed in the source code or logs.
+}
+
+\section{Query Types}{
+
+Various query types have been defined:
+\itemize{
+\item \code{"orders"}: 1 row per order, info about request (department, ward, room, etc.)
+\item \code{"results"}: 1 row per result, can be multiple in an order
+\item \code{"isolates"}: 1 row per isolate, can be multiple in a result
+}
+
+These types can be combined.
 }
 
 \examples{
@@ -146,6 +195,7 @@ Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
 
 Sys.time()
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
+Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
 }
 \seealso{
 \code{\link[DBI:dbConnect]{DBI::dbConnect()}}, \code{\link[odbc:dbConnect-OdbcDriver-method]{odbc::odbc()}}

@@ -16,6 +16,8 @@
 #  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
 # ===================================================================== #
 
+globalVariables(c("ORD_RECEIPTTIME"))
+
 #' @importFrom plot2 register_colour
 .onLoad <- function(...) {
   # load sf namespace on load, so that:
