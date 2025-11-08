@@ -1,0 +1,100 @@
+# `mmbi.epi`
+
+This is a UMCG R package containing helper functions for functionalities
+used in their department of Medical Microbiology, unit Epidemiology &
+Data Science.
+
+Upon loading, official UMCG colours are available too:
+
+``` r
+library(mmbi.epi)
+
+get_colour("umcgdonkerblauw")
+#> [1] "#003183"
+
+get_colour("umcgoranje")
+#> [1] "#FF7D00"
+
+get_colour("umcg", 2)
+#> [1] "#003183"  "#FF7D00"
+```
+
+# GLIMS read support
+
+Should work for any GLIMS v9.\* and v10.\*, if an ODBC connection is
+available.
+
+``` r
+library(mmbi.epi)
+
+conn <- connect_db()
+
+# download first 500 rows
+first_500 <- conn |>
+  glims_tbl("ANTIBIOTICRESULT") |>
+  retrieve(500)
+
+# joins
+conn |>
+  glims_tbl("REQUEST") |>
+  glims_join_tbl("ORDER_", by = c("RQST_ORDER" = "ORD_ID")) |>
+  glims_join_tbl("SPECIMEN", by = c("RQST_SPECIMEN" = "SPMN_ID")) |>
+  glims_join_tbl("MATERIAL", by = c("SPMN_MATERIAL" = "MAT_ID")) |>
+  show_query()
+```
+
+# Package index
+
+## All functions
+
+- [`connect_db()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`disconnect_db()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`glims_tbl()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`glims_join_tbl()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`preview()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`oracle_julian_to_datetime()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`datetime_to_oracle_julian()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`build_query()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`retrieve()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`get_glims_data()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`original_query()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  : GLIMS Database Access
+- [`geo_gemeenten`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
+  [`geo_ggdregios`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
+  [`geo_nuts3`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
+  [`geo_postcodes2`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
+  [`geo_postcodes3`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
+  [`geo_postcodes4`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
+  [`geo_postcodes6`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
+  [`geo_provincies`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
+  [`postcodes`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
+  [`postcodes4_afstanden`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
+  : GIS Data Sets
+- [`get_ms365_group()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`get_planner()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`get_drive()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`get_sharepoint_site()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`get_teams()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`get_drive_file()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`download_sharepoint_file()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`upload_sharepoint_file()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`import_sharepoint_rds()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`export_sharepoint_rds()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`open_sharepoint_analysis_file()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`save_sharepoint_analysis_file()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`get_current_file_path()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  : Microsoft 365 Group and SharePoint Utilities
+- [`scale_colour_umcg()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/plot_style_umcg.md)
+  [`scale_fill_umcg()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/plot_style_umcg.md)
+  [`register_umcg_plot_style()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/plot_style_umcg.md)
+  [`unregister_umcg_plot_style()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/plot_style_umcg.md)
+  : UMCG Plot Style
+- [`serialise()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/serialise-encrypt-post.md)
+  [`deserialise()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/serialise-encrypt-post.md)
+  [`encrypt()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/serialise-encrypt-post.md)
+  [`decrypt()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/serialise-encrypt-post.md)
+  [`post_data()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/serialise-encrypt-post.md)
+  [`create_json_body()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/serialise-encrypt-post.md)
+  [`read_json_body()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/serialise-encrypt-post.md)
+  : Serialise, Compress, Encrypt, and Transfer Data
+

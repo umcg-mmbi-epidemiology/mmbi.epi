@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">mmbi.epi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,7 +45,7 @@
 <span><span class="fu">glims_tbl</span><span class="op">(</span><span class="va">con</span>, <span class="va">table_name</span>, schema <span class="op">=</span> <span class="st">"ORAGLIMS"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">glims_join_tbl</span><span class="op">(</span></span>
-<span>  <span class="va">db_object</span>,</span>
+<span>  <span class="va">qry</span>,</span>
 <span>  <span class="va">table_name</span>,</span>
 <span>  by <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span>,</span>
@@ -53,13 +53,34 @@
 <span>  schema <span class="op">=</span> <span class="st">"ORAGLIMS"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">preview</span><span class="op">(</span><span class="va">db_object</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
+<span><span class="fu">preview</span><span class="op">(</span><span class="va">qry</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">oracle_julian_to_datetime</span><span class="op">(</span><span class="va">x</span>, tz <span class="op">=</span> <span class="st">"Europe/Amsterdam"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">retrieve</span><span class="op">(</span><span class="va">qry</span>, <span class="va">n</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">build_query</span><span class="op">(</span><span class="va">con</span>, <span class="va">qry_type</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">retrieve</span><span class="op">(</span></span>
+<span>  <span class="va">qry</span>,</span>
+<span>  limit <span class="op">=</span> <span class="cn">Inf</span>,</span>
+<span>  convert_julian <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  convert_logicals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  convert_column_names <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">get_glims_data</span><span class="op">(</span></span>
+<span>  <span class="va">date_range</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  convert_julian <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  convert_logicals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  convert_column_names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  limit <span class="op">=</span> <span class="cn">Inf</span>,</span>
+<span>  qry_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"results"</span>, <span class="st">"orders"</span><span class="op">)</span>,</span>
+<span>  db <span class="op">=</span> <span class="st">"Oracle"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">original_query</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -82,8 +103,8 @@
 <dd><p>Database schema; the upper structure name of <code>table_name</code>.</p></dd>
 
 
-<dt id="arg-db-object">db_object<a class="anchor" aria-label="anchor" href="#arg-db-object"></a></dt>
-<dd><p>SQL data object.</p></dd>
+<dt id="arg-qry">qry<a class="anchor" aria-label="anchor" href="#arg-qry"></a></dt>
+<dd><p>A <code>tbl_dbi</code> object representing the database query.</p></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
@@ -91,7 +112,8 @@
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Arguments passed on the join functions.</p></dd>
+<dd><p>.  * <code>get_glims_data()</code>: Arguments passed on the <code>WHERE</code> clause in the query. Supports <code>dplyr</code> language.</p><ul><li><p><code>glims_join_tbl()</code>: Arguments passed on the join functions.</p></li>
+</ul></dd>
 
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
@@ -103,19 +125,39 @@
 
 
 <dt id="arg-n">n<a class="anchor" aria-label="anchor" href="#arg-n"></a></dt>
-<dd><p>Maximum number of rows to return.</p></dd>
+<dd><p>Number of rows to collect.</p></dd>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>Numeric vector or data.frame, to convert Oracle Julian days to common dates. In case of data frames, only columns with numeric values that have Julian days between 1900-01-01 and 2075-01-01 will be converted.</p></dd>
+<dd><p>Numeric vector or data.frame, to convert Oracle Julian days to common dates. In case of data frames, only columns with numeric values that have Julian days between 1900-01-01 and 2100-01-01 will be converted.</p></dd>
 
 
 <dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>
 <dd><p>Target time zone.</p></dd>
 
 
-<dt id="arg-qry">qry<a class="anchor" aria-label="anchor" href="#arg-qry"></a></dt>
-<dd><p>Query to run.</p></dd>
+<dt id="arg-qry-type">qry_type<a class="anchor" aria-label="anchor" href="#arg-qry-type"></a></dt>
+<dd><p>Type of query, see <code>Query Types</code> below.</p></dd>
+
+
+<dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
+<dd><p>Maximum number of rows to return. The end result will probably have fewer results due to post-process data cleaning; the <code>limit</code> setting only applies to the original database query.</p></dd>
+
+
+<dt id="arg-convert-julian">convert_julian<a class="anchor" aria-label="anchor" href="#arg-convert-julian"></a></dt>
+<dd><p>Logical, whether to convert Oracle Julian date fields to Date or POSIXct.</p></dd>
+
+
+<dt id="arg-convert-logicals">convert_logicals<a class="anchor" aria-label="anchor" href="#arg-convert-logicals"></a></dt>
+<dd><p>Logical, whether to convert binary numeric fields (0/1) to logicals.</p></dd>
+
+
+<dt id="arg-convert-column-names">convert_column_names<a class="anchor" aria-label="anchor" href="#arg-convert-column-names"></a></dt>
+<dd><p>Logical, whether to rename column names using a lookup table from the package.</p></dd>
+
+
+<dt id="arg-date-range">date_range<a class="anchor" aria-label="anchor" href="#arg-date-range"></a></dt>
+<dd><p>Date range, can be length 1 or 2 (or more to use the min/max) to filter the <code>ORD_RECEIPTTIME</code> column. Supports date/time, date, and years. Use <code>NULL</code> to set no date filter.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -134,6 +176,15 @@
 <li><p><strong><code>MMBI_EPIDS_USER</code></strong> - Oracle database username</p></li>
 <li><p><strong><code>MMBI_EPIDS_PASS</code></strong> - Oracle database password</p></li>
 </ul><p>The environment variables are read at runtime using <code><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv()</a></code> and passed to <code><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">DBI::dbConnect()</a></code>. This approach ensures credentials are never exposed in the source code or logs.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="query-types">Query Types<a class="anchor" aria-label="anchor" href="#query-types"></a></h2>
+
+
+<p>Various query types have been defined:</p><ul><li><p><code>"orders"</code>: 1 row per order, info about request (department, ward, room, etc.)</p></li>
+<li><p><code>"results"</code>: 1 row per result, can be multiple in an order</p></li>
+<li><p><code>"isolates"</code>: 1 row per isolate, can be multiple in a result</p></li>
+</ul><p>These types can be combined.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -194,17 +245,19 @@
 <span class="r-in"><span><span class="co"># Other ----------------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2460985</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2460988</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-05"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-08"</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">oracle_julian_to_datetime</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-05"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-08"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-05 22:13:22 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-08 15:30:10 UTC"</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">oracle_julian_to_datetime</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-05 23:13:22 CET"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-08 16:30:10 CET"</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">oracle_julian_to_datetime</span><span class="op">(</span>tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-08 15:30:10 UTC"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -216,7 +269,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

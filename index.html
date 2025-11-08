@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">mmbi.epi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,6 +63,29 @@
 <span><span class="fu"><a href="https://msberends.github.io/plot2/reference/colour.html" class="external-link">get_colour</a></span><span class="op">(</span><span class="st">"umcg"</span>, <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "#003183"  "#FF7D00"</span></span></code></pre></div>
 </div>
+<div class="section level1">
+<h1 id="glims-read-support">GLIMS read support<a class="anchor" aria-label="anchor" href="#glims-read-support"></a>
+</h1>
+<p>Should work for any GLIMS v9.* and v10.*, if an ODBC connection is available.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://umcg-mmbi-epidemiology.github.io/mmbi.epi/">mmbi.epi</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">conn</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/db.html">connect_db</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># download first 500 rows</span></span>
+<span><span class="va">first_500</span> <span class="op">&lt;-</span> <span class="va">conn</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/db.html">glims_tbl</a></span><span class="op">(</span><span class="st">"ANTIBIOTICRESULT"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/db.html">retrieve</a></span><span class="op">(</span><span class="fl">500</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># joins</span></span>
+<span><span class="va">conn</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/db.html">glims_tbl</a></span><span class="op">(</span><span class="st">"REQUEST"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/db.html">glims_join_tbl</a></span><span class="op">(</span><span class="st">"ORDER_"</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"RQST_ORDER"</span> <span class="op">=</span> <span class="st">"ORD_ID"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/db.html">glims_join_tbl</a></span><span class="op">(</span><span class="st">"SPECIMEN"</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"RQST_SPECIMEN"</span> <span class="op">=</span> <span class="st">"SPMN_ID"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/db.html">glims_join_tbl</a></span><span class="op">(</span><span class="st">"MATERIAL"</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SPMN_MATERIAL"</span> <span class="op">=</span> <span class="st">"MAT_ID"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">show_query</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
@@ -107,7 +130,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
