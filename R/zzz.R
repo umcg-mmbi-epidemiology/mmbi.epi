@@ -16,7 +16,19 @@
 #  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
 # ===================================================================== #
 
-globalVariables(c("ORD_RECEIPTTIME"))
+# these are mentioned as objects, putting them in globalVariables() prevents a note in R CMD CHECK
+globalVariables(c("ORD_RECEIPTTIME",
+                  "username",
+                  "dbname",
+                  "servername",
+                  "DEPT_NAME",
+                  "ENCT_PERSON",
+                  "RSLT_RAWVALUE",
+                  "SPMN_INTERNALID",
+                  "SPMN_SAMPLINGTIME",
+                  "STAY_ENDTIME",
+                  "STAY_STARTTIME",
+                  "STN_MNEMONIC"))
 
 #' @importFrom plot2 register_colour
 .onLoad <- function(...) {
