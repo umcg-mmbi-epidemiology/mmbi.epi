@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">mmbi.epi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,20 @@
 <span></span>
 <span><span class="fu">glims_tbl</span><span class="op">(</span><span class="va">con</span>, <span class="va">table_name</span>, schema <span class="op">=</span> <span class="st">"ORAGLIMS"</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu">get_glims_data</span><span class="op">(</span></span>
+<span>  date_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  convert_julian <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  convert_logicals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  convert_column_names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  limit <span class="op">=</span> <span class="cn">Inf</span>,</span>
+<span>  qry_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"results"</span>, <span class="st">"orders"</span><span class="op">)</span>,</span>
+<span>  db <span class="op">=</span> <span class="st">"Oracle"</span>,</span>
+<span>  only_include_labs <span class="op">=</span> <span class="st">"Medische Microbiologie"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">db</span></span>
+<span></span>
 <span><span class="fu">glims_join_tbl</span><span class="op">(</span></span>
 <span>  <span class="va">qry</span>,</span>
 <span>  <span class="va">table_name</span>,</span>
@@ -53,13 +67,18 @@
 <span>  schema <span class="op">=</span> <span class="st">"ORAGLIMS"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">preview</span><span class="op">(</span><span class="va">qry</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
-<span></span>
 <span><span class="fu">oracle_julian_to_datetime</span><span class="op">(</span><span class="va">x</span>, tz <span class="op">=</span> <span class="st">"Europe/Amsterdam"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">build_query</span><span class="op">(</span><span class="va">con</span>, <span class="va">qry_type</span><span class="op">)</span></span>
+<span><span class="fu">build_query</span><span class="op">(</span></span>
+<span>  <span class="va">con</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  qry_type <span class="op">=</span> <span class="st">"results"</span>,</span>
+<span>  only_include_labs <span class="op">=</span> <span class="st">"Medische Microbiologie"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">preview</span><span class="op">(</span><span class="va">qry</span>, n <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">retrieve</span><span class="op">(</span></span>
 <span>  <span class="va">qry</span>,</span>
@@ -69,20 +88,13 @@
 <span>  convert_column_names <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">get_glims_data</span><span class="op">(</span></span>
-<span>  <span class="va">date_range</span>,</span>
-<span>  <span class="va">...</span>,</span>
-<span>  convert_julian <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  convert_logicals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  convert_column_names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  limit <span class="op">=</span> <span class="cn">Inf</span>,</span>
-<span>  qry_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"results"</span>, <span class="st">"orders"</span><span class="op">)</span>,</span>
-<span>  db <span class="op">=</span> <span class="st">"Oracle"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">original_query</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">retrieve_query</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="format">Format<a class="anchor" aria-label="anchor" href="#format"></a></h2>
+    <p>An object of class <code>list</code> of length 856.</p>
+    </div>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
@@ -103,45 +115,14 @@
 <dd><p>Database schema; the upper structure name of <code>table_name</code>.</p></dd>
 
 
-<dt id="arg-qry">qry<a class="anchor" aria-label="anchor" href="#arg-qry"></a></dt>
-<dd><p>A <code>tbl_dbi</code> object representing the database query.</p></dd>
-
-
-<dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
-<dd><p>Column name(s) to join by. Can be a named vector to allow different names:<br><code>by = c("col_A" = "col_B")</code>.</p></dd>
+<dt id="arg-date-range">date_range<a class="anchor" aria-label="anchor" href="#arg-date-range"></a></dt>
+<dd><p>Date range, can be length 1 or 2 (or more to use the min/max) to filter the <code>ORD_RECEIPTTIME</code> column. Supports date/time, date, and years. Use <code>NULL</code> to set no date filter.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>.  * <code>get_glims_data()</code>: Arguments passed on the <code>WHERE</code> clause in the query. Supports <code>dplyr</code> language.</p><ul><li><p><code>glims_join_tbl()</code>: Arguments passed on the join functions.</p></li>
+<dd><ul><li><p><code>glims_join_tbl()</code>: Arguments passed on the join functions.
+.  * Otherwise: Arguments passed on the <code>WHERE</code> clause in the query. Supports <code>dplyr</code> language.</p></li>
 </ul></dd>
-
-
-<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
-<dd><p>Direction of the join, defaults to <code>"left"</code>.</p><ul><li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"inner"</a></code>: returns matched x rows.</p></li>
-<li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"left"</a></code>: returns all x rows.</p></li>
-<li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"right"</a></code>: returns matched of x rows, followed by unmatched y rows.</p></li>
-<li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"full"</a></code>: returns all x rows, followed by unmatched y rows.</p></li>
-</ul></dd>
-
-
-<dt id="arg-n">n<a class="anchor" aria-label="anchor" href="#arg-n"></a></dt>
-<dd><p>Number of rows to collect.</p></dd>
-
-
-<dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>Numeric vector or data.frame, to convert Oracle Julian days to common dates. In case of data frames, only columns with numeric values that have Julian days between 1900-01-01 and 2100-01-01 will be converted.</p></dd>
-
-
-<dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>
-<dd><p>Target time zone.</p></dd>
-
-
-<dt id="arg-qry-type">qry_type<a class="anchor" aria-label="anchor" href="#arg-qry-type"></a></dt>
-<dd><p>Type of query, see <code>Query Types</code> below.</p></dd>
-
-
-<dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
-<dd><p>Maximum number of rows to return. The end result will probably have fewer results due to post-process data cleaning; the <code>limit</code> setting only applies to the original database query.</p></dd>
 
 
 <dt id="arg-convert-julian">convert_julian<a class="anchor" aria-label="anchor" href="#arg-convert-julian"></a></dt>
@@ -156,8 +137,44 @@
 <dd><p>Logical, whether to rename column names using a lookup table from the package.</p></dd>
 
 
-<dt id="arg-date-range">date_range<a class="anchor" aria-label="anchor" href="#arg-date-range"></a></dt>
-<dd><p>Date range, can be length 1 or 2 (or more to use the min/max) to filter the <code>ORD_RECEIPTTIME</code> column. Supports date/time, date, and years. Use <code>NULL</code> to set no date filter.</p></dd>
+<dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
+<dd><p>Maximum number of rows to return. The end result will probably have fewer results due to post-process data cleaning; the <code>limit</code> setting only applies to the original database query.</p></dd>
+
+
+<dt id="arg-qry-type">qry_type<a class="anchor" aria-label="anchor" href="#arg-qry-type"></a></dt>
+<dd><p>Type of query, see <code>Query Types</code> below.</p></dd>
+
+
+<dt id="arg-only-include-labs">only_include_labs<a class="anchor" aria-label="anchor" href="#arg-only-include-labs"></a></dt>
+<dd><p>Laboratories to include, defaults to only <code>"Medische Microbiologie"</code>. This sets a <code>WHERE</code> on <code>DEPARTMENT.DEPTNAME</code>.</p></dd>
+
+
+<dt id="arg-qry">qry<a class="anchor" aria-label="anchor" href="#arg-qry"></a></dt>
+<dd><p>A <code>tbl_dbi</code> object representing the database query.</p></dd>
+
+
+<dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
+<dd><p>Column name(s) to join by. Can be a named vector to allow different names:<br><code>by = c("col_A" = "col_B")</code>.</p></dd>
+
+
+<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
+<dd><p>Direction of the join, defaults to <code>"left"</code>.</p><ul><li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"inner"</a></code>: returns matched x rows.</p></li>
+<li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"left"</a></code>: returns all x rows.</p></li>
+<li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"right"</a></code>: returns matched of x rows, followed by unmatched y rows.</p></li>
+<li><p><code><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">"full"</a></code>: returns all x rows, followed by unmatched y rows.</p></li>
+</ul></dd>
+
+
+<dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dd><p>Numeric vector or data.frame, to convert Oracle Julian days to common dates. In case of data frames, only columns with numeric values that have Julian days between 1900-01-01 and 2100-01-01 will be converted.</p></dd>
+
+
+<dt id="arg-tz">tz<a class="anchor" aria-label="anchor" href="#arg-tz"></a></dt>
+<dd><p>Target time zone.</p></dd>
+
+
+<dt id="arg-n">n<a class="anchor" aria-label="anchor" href="#arg-n"></a></dt>
+<dd><p>Number of rows to collect.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -178,12 +195,28 @@
 </ul><p>The environment variables are read at runtime using <code><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv()</a></code> and passed to <code><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">DBI::dbConnect()</a></code>. This approach ensures credentials are never exposed in the source code or logs.</p>
     </div>
     <div class="section level2">
+    <h2 id="picking-columns-with-db-">Picking Columns with <code>db$</code><a class="anchor" aria-label="anchor" href="#picking-columns-with-db-"></a></h2>
+
+
+<p>Always use the <code>db</code> object (a <a href="https://rdrr.io/r/base/list.html" class="external-link">list</a>) to pick database columns for filtering. It contains all GLIMS column names. They must <strong>always</strong> be preceded by the injection operator <code><a href="https://rlang.r-lib.org/reference/injection-operator.html" class="external-link">!!</a></code> (pronounced "bang-bang"). For example:</p>
+<p></p><div class="sourceCode r"><pre><code><span><span class="fu"><a href="../reference/db.html">get_glims_data</a></span><span class="op">(</span><span class="fl">2025</span>, <span class="op">!</span><span class="op">!</span><span class="va">db</span><span class="op">$</span><span class="va">specimen_name</span> <span class="op">==</span> <span class="st">"Sputum"</span><span class="op">)</span>   <span class="co"># writing `db$` will bring up all columns</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/db.html">get_glims_data</a></span><span class="op">(</span><span class="fl">2025</span>, <span class="va">ORD_ID</span> <span class="op">==</span> <span class="fl">461098</span><span class="op">)</span>                 <span class="co"># Does not work</span></span>
+<span><span class="fu"><a href="../reference/db.html">get_glims_data</a></span><span class="op">(</span><span class="fl">2025</span>, <span class="op">!</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/parse.html" class="external-link">str2lang</a></span><span class="op">(</span><span class="st">"ORD_ID"</span><span class="op">)</span> <span class="op">==</span> <span class="fl">461098</span><span class="op">)</span>   <span class="co"># Works</span></span>
+<span><span class="fu"><a href="../reference/db.html">get_glims_data</a></span><span class="op">(</span><span class="fl">2025</span>, <span class="op">!</span><span class="op">!</span><span class="va">db</span><span class="op">$</span><span class="va">ORDER_.ORD_ID</span> <span class="op">==</span> <span class="fl">461098</span><span class="op">)</span>     <span class="co"># Works and easier to write</span></span>
+<span></span>
+<span><span class="va">con</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/db.html">build_query</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="va">db</span><span class="op">$</span><span class="va">specimen_name</span> <span class="op">==</span> <span class="st">"Sputum"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/db.html">retrieve</a></span><span class="op">(</span><span class="op">)</span></span></code></pre><p></p></div>
+    </div>
+    <div class="section level2">
     <h2 id="query-types">Query Types<a class="anchor" aria-label="anchor" href="#query-types"></a></h2>
 
 
-<p>Various query types have been defined:</p><ul><li><p><code>"orders"</code>: 1 row per order, info about request (department, ward, room, etc.)</p></li>
-<li><p><code>"results"</code>: 1 row per result, can be multiple in an order</p></li>
-<li><p><code>"isolates"</code>: 1 row per isolate, can be multiple in a result</p></li>
+<p>Various query types have been defined:</p><ul><li><p><code>"orders"</code> (always included): 1 row per order (which can contain multiple specimens): info about request (department, ward, room, etc.)</p><ul><li><p><code>"stays"</code>: 1 row per patient movement with admissions dates: info about every ward admission and room, can be multiple in an order</p></li>
+<li><p><code>"results"</code>: 1 row per result, can be multiple in an order</p><ul><li><p><code>"isolates"</code>: 1 row per isolate, can be multiple in a result</p><ul><li><p><code>"cultures"</code>: 1 row per carrier (such as an agar plate), can be multiple of an isolate</p></li>
+</ul></li>
+<li><p><code>"microscopy"</code>: 1 row per microscopy result, can be multiple in a result</p></li>
+</ul></li>
+</ul></li>
 </ul><p>These types can be combined.</p>
     </div>
     <div class="section level2">
@@ -245,19 +278,19 @@
 <span class="r-in"><span><span class="co"># Other ----------------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2460988</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2460990</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-08"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-10"</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">oracle_julian_to_datetime</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-08"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-10"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-08 15:30:10 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-10 10:48:35 UTC"</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">oracle_julian_to_datetime</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-08 16:30:10 CET"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-10 11:48:35 CET"</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">oracle_julian_to_datetime</span><span class="op">(</span>tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-08 15:30:10 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-10 10:48:35 UTC"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

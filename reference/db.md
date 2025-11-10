@@ -14,6 +14,20 @@ disconnect_db(con)
 
 glims_tbl(con, table_name, schema = "ORAGLIMS")
 
+get_glims_data(
+  date_range = NULL,
+  ...,
+  convert_julian = TRUE,
+  convert_logicals = TRUE,
+  convert_column_names = TRUE,
+  limit = Inf,
+  qry_type = c("results", "orders"),
+  db = "Oracle",
+  only_include_labs = "Medische Microbiologie"
+)
+
+db
+
 glims_join_tbl(
   qry,
   table_name,
@@ -23,13 +37,18 @@ glims_join_tbl(
   schema = "ORAGLIMS"
 )
 
-preview(qry, n = 100)
-
 oracle_julian_to_datetime(x, tz = "Europe/Amsterdam")
 
 datetime_to_oracle_julian(x)
 
-build_query(con, qry_type)
+build_query(
+  con,
+  ...,
+  qry_type = "results",
+  only_include_labs = "Medische Microbiologie"
+)
+
+preview(qry, n = 100)
 
 retrieve(
   qry,
@@ -39,19 +58,12 @@ retrieve(
   convert_column_names = TRUE
 )
 
-get_glims_data(
-  date_range,
-  ...,
-  convert_julian = TRUE,
-  convert_logicals = TRUE,
-  convert_column_names = TRUE,
-  limit = Inf,
-  qry_type = c("results", "orders"),
-  db = "Oracle"
-)
-
-original_query(x)
+retrieve_query(x)
 ```
+
+## Format
+
+An object of class `list` of length 856.
 
 ## Arguments
 
@@ -71,6 +83,47 @@ original_query(x)
 
   Database schema; the upper structure name of `table_name`.
 
+- date_range:
+
+  Date range, can be length 1 or 2 (or more to use the min/max) to
+  filter the `ORD_RECEIPTTIME` column. Supports date/time, date, and
+  years. Use `NULL` to set no date filter.
+
+- ...:
+
+  - `glims_join_tbl()`: Arguments passed on the join functions. . \*
+    Otherwise: Arguments passed on the `WHERE` clause in the query.
+    Supports `dplyr` language.
+
+- convert_julian:
+
+  Logical, whether to convert Oracle Julian date fields to Date or
+  POSIXct.
+
+- convert_logicals:
+
+  Logical, whether to convert binary numeric fields (0/1) to logicals.
+
+- convert_column_names:
+
+  Logical, whether to rename column names using a lookup table from the
+  package.
+
+- limit:
+
+  Maximum number of rows to return. The end result will probably have
+  fewer results due to post-process data cleaning; the `limit` setting
+  only applies to the original database query.
+
+- qry_type:
+
+  Type of query, see `Query Types` below.
+
+- only_include_labs:
+
+  Laboratories to include, defaults to only `"Medische Microbiologie"`.
+  This sets a `WHERE` on `DEPARTMENT.DEPTNAME`.
+
 - qry:
 
   A `tbl_dbi` object representing the database query.
@@ -80,13 +133,6 @@ original_query(x)
   Column name(s) to join by. Can be a named vector to allow different
   names:  
   `by = c("col_A" = "col_B")`.
-
-- ...:
-
-  . \* `get_glims_data()`: Arguments passed on the `WHERE` clause in the
-  query. Supports `dplyr` language.
-
-  - `glims_join_tbl()`: Arguments passed on the join functions.
 
 - type:
 
@@ -104,10 +150,6 @@ original_query(x)
   - [`"full"`](https://dplyr.tidyverse.org/reference/mutate-joins.html):
     returns all x rows, followed by unmatched y rows.
 
-- n:
-
-  Number of rows to collect.
-
 - x:
 
   Numeric vector or data.frame, to convert Oracle Julian days to common
@@ -118,35 +160,9 @@ original_query(x)
 
   Target time zone.
 
-- qry_type:
+- n:
 
-  Type of query, see `Query Types` below.
-
-- limit:
-
-  Maximum number of rows to return. The end result will probably have
-  fewer results due to post-process data cleaning; the `limit` setting
-  only applies to the original database query.
-
-- convert_julian:
-
-  Logical, whether to convert Oracle Julian date fields to Date or
-  POSIXct.
-
-- convert_logicals:
-
-  Logical, whether to convert binary numeric fields (0/1) to logicals.
-
-- convert_column_names:
-
-  Logical, whether to rename column names using a lookup table from the
-  package.
-
-- date_range:
-
-  Date range, can be length 1 or 2 (or more to use the min/max) to
-  filter the `ORD_RECEIPTTIME` column. Supports date/time, date, and
-  years. Use `NULL` to set no date filter.
+  Number of rows to collect.
 
 ## Value
 
@@ -180,16 +196,41 @@ The environment variables are read at runtime using
 This approach ensures credentials are never exposed in the source code
 or logs.
 
+## Picking Columns with `db$`
+
+Always use the `db` object (a [list](https://rdrr.io/r/base/list.html))
+to pick database columns for filtering. It contains all GLIMS column
+names. They must **always** be preceded by the injection operator
+[`!!`](https://rlang.r-lib.org/reference/injection-operator.html)
+(pronounced "bang-bang"). For example:
+
+    get_glims_data(2025, !!db$specimen_name == "Sputum")   # writing `db$` will bring up all columns
+
+    get_glims_data(2025, ORD_ID == 461098)                 # Does not work
+    get_glims_data(2025, !!str2lang("ORD_ID") == 461098)   # Works
+    get_glims_data(2025, !!db$ORDER_.ORD_ID == 461098)     # Works and easier to write
+
+    con |> build_query(!!db$specimen_name == "Sputum") |> retrieve()
+
 ## Query Types
 
 Various query types have been defined:
 
-- `"orders"`: 1 row per order, info about request (department, ward,
-  room, etc.)
+- `"orders"` (always included): 1 row per order (which can contain
+  multiple specimens): info about request (department, ward, room, etc.)
 
-- `"results"`: 1 row per result, can be multiple in an order
+  - `"stays"`: 1 row per patient movement with admissions dates: info
+    about every ward admission and room, can be multiple in an order
 
-- `"isolates"`: 1 row per isolate, can be multiple in a result
+  - `"results"`: 1 row per result, can be multiple in an order
+
+    - `"isolates"`: 1 row per isolate, can be multiple in a result
+
+      - `"cultures"`: 1 row per carrier (such as an agar plate), can be
+        multiple of an isolate
+
+    - `"microscopy"`: 1 row per microscopy result, can be multiple in a
+      result
 
 These types can be combined.
 
@@ -253,17 +294,17 @@ disconnect_db(conn)
 # Other ----------------------------------------------------------------
 
 datetime_to_oracle_julian(Sys.Date())
-#> [1] 2460988
+#> [1] 2460990
 
 Sys.Date()
-#> [1] "2025-11-08"
+#> [1] "2025-11-10"
 Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2025-11-08"
+#> [1] "2025-11-10"
 
 Sys.time()
-#> [1] "2025-11-08 15:30:10 UTC"
+#> [1] "2025-11-10 10:48:35 UTC"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2025-11-08 16:30:10 CET"
+#> [1] "2025-11-10 11:48:35 CET"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
-#> [1] "2025-11-08 15:30:10 UTC"
+#> [1] "2025-11-10 10:48:35 UTC"
 ```
