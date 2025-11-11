@@ -14,6 +14,11 @@
 \alias{preview}
 \alias{retrieve}
 \alias{retrieve_query}
+\alias{search_for_test}
+\alias{search_for_specimen}
+\alias{search_for_ward}
+\alias{search_for_specialism}
+\alias{search_for_physician}
 \title{GLIMS Database Access}
 \format{
 An object of class \code{list} of length 856.
@@ -70,6 +75,16 @@ retrieve(
 )
 
 retrieve_query(x)
+
+search_for_test(db = "Oracle")
+
+search_for_specimen(db = "Oracle")
+
+search_for_ward(db = "Oracle")
+
+search_for_specialism(db = "Oracle")
+
+search_for_physician(db = "Oracle")
 }
 \arguments{
 \item{db}{Database to connect to.}

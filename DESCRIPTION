@@ -34,8 +34,10 @@ Suggests:
   AMR,
   cli,
   DBI,
+  DT,
   ggplot2,
   rlang,
+  shiny,
   sf,
   rstudioapi,
   tidyselect

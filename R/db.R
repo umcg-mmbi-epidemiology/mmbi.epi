@@ -450,6 +450,10 @@ build_query <- function(con, ..., qry_type = "results", only_include_labs = "Med
       # FILTER USER-DEFINED
       filters <- rlang::enquos(...)
       if (length(filters) > 0) {
+        str <- paste0(as.character(unlist(filters)), collapse = "")
+        if (grepl("db$", str, fixed = TRUE)) {
+          stop("Did you forget `!!` to use with `db$`? Use `!!db$...` instead.", call. = FALSE)
+        }
         full_qry <- full_qry |> filter(filters)
       }
 
@@ -538,7 +542,7 @@ retrieve <- function(qry,
   }
 
   cli::cli_alert_info(paste0("Done in ", format(round(difftime(Sys.time(), start_the_clock), 2)),
-                      ", returning ", format(NROW(out), big.mark = ","), " x ", format(NCOL(out), big.mark = ","), " observations"))
+                             ", returning ", format(NROW(out), big.mark = ","), " x ", format(NCOL(out), big.mark = ","), " observations"))
   # message(" -> Done in ", format(round(difftime(Sys.time(), start_the_clock), 2)),
   #         ", returning ", format(NROW(out), big.mark = ","), " x ", format(NCOL(out), big.mark = ","), " observations")
 
@@ -566,6 +570,108 @@ retrieve_query <- function(x) {
   cat(qry)
   cat("\n")
   invisible(qry)
+}
+
+#' @rdname db
+#' @export
+search_for_test <- function(db = "Oracle") {
+  search_for(db, "PROPERTY")
+}
+
+#' @rdname db
+#' @export
+search_for_specimen <- function(db = "Oracle") {
+  search_for(db, "MATERIAL")
+}
+
+#' @rdname db
+#' @export
+search_for_ward <- function(db = "Oracle") {
+  search_for(db, "WARD")
+}
+
+#' @rdname db
+#' @export
+search_for_specialism <- function(db = "Oracle") {
+  search_for(db, "SPECIALISM")
+}
+
+#' @rdname db
+#' @export
+search_for_physician <- function(db = "Oracle") {
+  search_for(db, "HCPROVIDER")
+}
+
+
+# OTHER FUNCTIONS ---------------------------------------------------------------------------------
+
+#' @importFrom dplyr select collect
+search_for <- function(db, type) {
+  rlang::check_installed("shiny")
+  rlang::check_installed("DT")
+
+  con <- connect_db(db = db)
+  on.exit(disconnect_db(con))
+
+  if (type == "PROPERTY") {
+    data <- con |>
+      glims_tbl("PROPERTY") |>
+      glims_join_tbl("CHOICELIST", by = c("PROP_CHOICELIST" = "CHCL_ID")) |>
+      select(PROP_ID, PROP_MNEMONIC, PROP_SHORTNAME, output_type = CHCL_NAME, free_text = CHCL_FREETEXTALLOWED) |>
+      collect() |>
+      mutate(free_text = as.logical(free_text))
+  } else if (type == "MATERIAL") {
+    data <- con |>
+      glims_tbl("MATERIAL") |>
+      glims_join_tbl("UNIT", by = c("MAT_SIZEUNIT" = "UNIT_ID")) |>
+      glims_join_tbl("DIMENSION", by = c("UNIT_DIMENSION" = "DIM_ID")) |>
+      select(MAT_MNEMONIC, MAT_SHORTNAME, MAT_COMMENT, unit = UNIT_NAME, dimension = DIM_NAME) |>
+      collect()
+  } else if (type == "WARD") {
+    data <- con |>
+      glims_tbl("WARD") |>
+      select(WARD_MNEMONIC, WARD_NAME) |>
+      collect()
+  } else if (type == "SPECIALISM") {
+    data <- con |>
+      glims_tbl("SPECIALISM") |>
+      select(SPEC_MNEMONIC, SPEC_NAME) |>
+      collect()
+  } else if (type == "HCPROVIDER") {
+    data <- con |>
+      glims_tbl("HCPROVIDER") |>
+      select(HCPR_MNEMONIC, HCPR_FIRSTNAME, HCPR_LASTNAME, HCPR_TITLE, HCPR_SEX, age_group = HCPR_BIRTHDATE) |>
+      collect() |>
+      mutate(HCPR_SEX = ifelse(HCPR_SEX == 1, "M", ifelse(HCPR_SEX == 2, "V", "?")),
+             age_group  = ifelse(is.na(as.Date(age_group)),
+                                 NA_real_,
+                                 floor(as.numeric(Sys.Date() - as.Date(age_group)) / 365.25)),
+             age_group  = ifelse(is.na(age_group),
+                                 NA_real_,
+                                 floor(age_group / 10) * 10),
+             age_group  = ifelse(is.na(age_group),
+                                 NA_character_,
+                                 sprintf("%d-%d", age_group, age_group + 9)))
+  }
+
+  suppressMessages(
+    shiny::shinyApp(
+      ui = shiny::fluidPage(
+        shiny::titlePanel(paste("Search GLIMS", type, "table")),
+        DT::dataTableOutput("shiny_table")
+      ),
+      server = function(input, output, session) {
+        output$shiny_table <- DT::renderDataTable({
+          DT::datatable(
+            data,
+            filter = "top",
+            rownames = FALSE,
+            options = list(pageLength = 50, autoWidth = TRUE)
+          )
+        })
+      }
+    )
+  )
 }
 
 #' @importFrom pillar tbl_sum dim_desc
@@ -629,22 +735,19 @@ format_dimensions <- function(dims) {
 
 with_cli_status <- function(msg, expr, time = TRUE) {
   start_time <- Sys.time()
-  if (time == TRUE) {
-  msg <- paste0("[", format(start_time), "] ", msg)
-  }
-  cli::cli_process_start(msg,
-                         msg_failed = paste0(msg, "... ERROR"))
-  result <- tryCatch(
-    {
-      val <- force(expr)
-      cli::cli_process_done(msg_done = paste0(msg, "... OK (", format(round(difftime(Sys.time(), start_time), 2)), ")"))
-      val
-    },
-    error = function(e) {
-      `%||%` <- function(x, y) if (!is.null(x)) x else y
-      cli::cli_process_failed(e$message)
-      stop(e)
-    }
-  )
+
+  cli::cli_process_start(msg = paste0(ifelse(time == TRUE, paste0("[", format(start_time), "] "), ""),
+                                      cli::style_bold(msg)),
+                         msg_failed = paste0(ifelse(time == TRUE, paste0("[", format(start_time), "] "), ""),
+                                             cli::col_red(paste0(cli::style_bold(msg), " !ERROR"))))
+  result <- tryCatch({
+    val <- force(expr)
+    cli::cli_process_done(msg_done = paste0(ifelse(time == TRUE, paste0("[", format(start_time), "] "), ""),
+                                            paste0(cli::col_green(cli::style_bold(msg)), " (", format(round(difftime(Sys.time(), start_time), 2)), ")")))
+    val
+  }, error = function(e) {
+    cli::cli_process_failed(e$message)
+    stop(e)
+  })
   invisible(result)
 }
