@@ -59,6 +59,16 @@ retrieve(
 )
 
 retrieve_query(x)
+
+search_for_test(db = "Oracle")
+
+search_for_specimen(db = "Oracle")
+
+search_for_ward(db = "Oracle")
+
+search_for_specialism(db = "Oracle")
+
+search_for_physician(db = "Oracle")
 ```
 
 ## Format
@@ -294,17 +304,17 @@ disconnect_db(conn)
 # Other ----------------------------------------------------------------
 
 datetime_to_oracle_julian(Sys.Date())
-#> [1] 2460990
+#> [1] 2460991
 
 Sys.Date()
-#> [1] "2025-11-10"
+#> [1] "2025-11-11"
 Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2025-11-10"
+#> [1] "2025-11-11"
 
 Sys.time()
-#> [1] "2025-11-10 10:48:35 UTC"
+#> [1] "2025-11-11 17:22:05 UTC"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2025-11-10 11:48:35 CET"
+#> [1] "2025-11-11 18:22:05 CET"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
-#> [1] "2025-11-10 10:48:35 UTC"
+#> [1] "2025-11-11 17:22:05 UTC"
 ```

@@ -59,6 +59,11 @@ conn |>
   [`preview()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
   [`retrieve()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
   [`retrieve_query()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`search_for_test()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`search_for_specimen()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`search_for_ward()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`search_for_specialism()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`search_for_physician()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
   : GLIMS Database Access
 - [`geo_gemeenten`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
   [`geo_ggdregios`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
