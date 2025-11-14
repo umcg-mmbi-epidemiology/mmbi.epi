@@ -17,6 +17,7 @@ glims_tbl(con, table_name, schema = "ORAGLIMS")
 get_glims_data(
   date_range = NULL,
   ...,
+  additional_columns = character(0),
   convert_julian = TRUE,
   convert_logicals = TRUE,
   convert_column_names = TRUE,
@@ -45,6 +46,7 @@ build_query(
   con,
   ...,
   qry_type = "results",
+  additional_columns = character(0),
   only_include_labs = "Medische Microbiologie"
 )
 
@@ -73,7 +75,7 @@ search_for_physician(db = "Oracle")
 
 ## Format
 
-An object of class `list` of length 856.
+An object of class `list` of length 892.
 
 ## Arguments
 
@@ -104,6 +106,10 @@ An object of class `list` of length 856.
   - `glims_join_tbl()`: Arguments passed on the join functions. . \*
     Otherwise: Arguments passed on the `WHERE` clause in the query.
     Supports `dplyr` language.
+
+- additional_columns:
+
+  Character vector of additional column names to return.
 
 - convert_julian:
 
@@ -304,17 +310,17 @@ disconnect_db(conn)
 # Other ----------------------------------------------------------------
 
 datetime_to_oracle_julian(Sys.Date())
-#> [1] 2460991
+#> [1] 2460994
 
 Sys.Date()
-#> [1] "2025-11-11"
+#> [1] "2025-11-14"
 Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2025-11-11"
+#> [1] "2025-11-14"
 
 Sys.time()
-#> [1] "2025-11-11 17:22:05 UTC"
+#> [1] "2025-11-14 09:24:34 UTC"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2025-11-11 18:22:05 CET"
+#> [1] "2025-11-14 10:24:34 CET"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
-#> [1] "2025-11-11 17:22:05 UTC"
+#> [1] "2025-11-14 09:24:34 UTC"
 ```

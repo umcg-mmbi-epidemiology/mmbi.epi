@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">mmbi.epi</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,6 +47,7 @@
 <span><span class="fu">get_glims_data</span><span class="op">(</span></span>
 <span>  date_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span>,</span>
+<span>  additional_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  convert_julian <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  convert_logicals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  convert_column_names <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -75,6 +76,7 @@
 <span>  <span class="va">con</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  qry_type <span class="op">=</span> <span class="st">"results"</span>,</span>
+<span>  additional_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span>,</span>
 <span>  only_include_labs <span class="op">=</span> <span class="st">"Medische Microbiologie"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -103,7 +105,7 @@
 
     <div class="section level2">
     <h2 id="format">Format<a class="anchor" aria-label="anchor" href="#format"></a></h2>
-    <p>An object of class <code>list</code> of length 856.</p>
+    <p>An object of class <code>list</code> of length 892.</p>
     </div>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
@@ -133,6 +135,10 @@
 <dd><ul><li><p><code>glims_join_tbl()</code>: Arguments passed on the join functions.
 .  * Otherwise: Arguments passed on the <code>WHERE</code> clause in the query. Supports <code>dplyr</code> language.</p></li>
 </ul></dd>
+
+
+<dt id="arg-additional-columns">additional_columns<a class="anchor" aria-label="anchor" href="#arg-additional-columns"></a></dt>
+<dd><p>Character vector of additional column names to return.</p></dd>
 
 
 <dt id="arg-convert-julian">convert_julian<a class="anchor" aria-label="anchor" href="#arg-convert-julian"></a></dt>
@@ -288,19 +294,19 @@
 <span class="r-in"><span><span class="co"># Other ----------------------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2460991</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2460994</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-11"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-14"</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">oracle_julian_to_datetime</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-11"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-14"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-11 17:22:05 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-14 09:24:34 UTC"</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">oracle_julian_to_datetime</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-11 18:22:05 CET"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-14 10:24:34 CET"</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">datetime_to_oracle_julian</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">oracle_julian_to_datetime</span><span class="op">(</span>tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-11 17:22:05 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2025-11-14 09:24:34 UTC"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
