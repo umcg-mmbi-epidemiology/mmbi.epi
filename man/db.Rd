@@ -21,7 +21,7 @@
 \alias{search_for_physician}
 \title{GLIMS Database Access}
 \format{
-An object of class \code{list} of length 856.
+An object of class \code{list} of length 892.
 }
 \usage{
 connect_db(db = "Oracle")
@@ -33,6 +33,7 @@ glims_tbl(con, table_name, schema = "ORAGLIMS")
 get_glims_data(
   date_range = NULL,
   ...,
+  additional_columns = character(0),
   convert_julian = TRUE,
   convert_logicals = TRUE,
   convert_column_names = TRUE,
@@ -61,6 +62,7 @@ build_query(
   con,
   ...,
   qry_type = "results",
+  additional_columns = character(0),
   only_include_labs = "Medische Microbiologie"
 )
 
@@ -101,6 +103,8 @@ search_for_physician(db = "Oracle")
 \item \code{\link[=glims_join_tbl]{glims_join_tbl()}}: Arguments passed on the join functions.
 .  * Otherwise: Arguments passed on the \code{WHERE} clause in the query. Supports \code{dplyr} language.
 }}
+
+\item{additional_columns}{Character vector of additional column names to return.}
 
 \item{convert_julian}{Logical, whether to convert Oracle Julian date fields to Date or POSIXct.}
 

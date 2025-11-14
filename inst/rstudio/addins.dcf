@@ -1,3 +1,23 @@
 Name: 💾 Save this file to SharePoint
 Binding: save_sharepoint_analysis_file
 Interactive: false
+
+Name: 🩸 Search GLIMS for specimen...
+Binding: search_for_specimen
+Interactive: true
+
+Name: 👩 Search GLIMS for physician...
+Binding: search_for_physician
+Interactive: true
+
+Name: 🩺 Search GLIMS for specialism...
+Binding: search_for_specialism
+Interactive: true
+
+Name: 🧪 Search GLIMS for test...
+Binding: search_for_test
+Interactive: true
+
+Name: 🏥 Search GLIMS for ward...
+Binding: search_for_ward
+Interactive: true

@@ -146,22 +146,30 @@ glims_tbl <- function(con, table_name, schema = "ORAGLIMS") {
 }
 
 #' @param date_range Date range, can be length 1 or 2 (or more to use the min/max) to filter the `ORD_RECEIPTTIME` column. Supports date/time, date, and years. Use `NULL` to set no date filter.
+#' @param review_qry Logical to indicate whether  the query must be reviewed before running.
 #' @importFrom dplyr filter between
+#' @importFrom dbplyr sql_build
 #' @rdname db
 #' @export
 get_glims_data <- function(date_range = NULL,
                            ...,
+                           additional_columns = character(0),
                            convert_julian = TRUE,
                            convert_logicals = TRUE,
                            convert_column_names = TRUE,
                            limit = Inf,
                            qry_type = c("results", "orders"),
                            db = "Oracle",
-                           only_include_labs = "Medische Microbiologie") {
+                           only_include_labs = "Medische Microbiologie",
+                           review_qry = interactive()) {
   con <- connect_db(db = db)
   on.exit(disconnect_db(con))
 
-  qry <- con |> build_query(..., qry_type = qry_type, only_include_labs = only_include_labs)
+  qry <- con |>
+    build_query(...,
+                qry_type = qry_type,
+                additional_columns = additional_columns,
+                only_include_labs = only_include_labs)
 
   if (!is.null(date_range)) {
     # format date range
@@ -184,13 +192,33 @@ get_glims_data <- function(date_range = NULL,
                        !!(date_range[2])))
   }
 
-  out <- qry |>
-    retrieve(limit = limit,
-             convert_julian = convert_julian,
-             convert_logicals = convert_logicals,
-             convert_column_names = convert_column_names)
-}
+  if (review_qry == TRUE) {
+    where_txt <- as.character(sql_build(qry)$where)
+    cat("Collect the data using this WHERE clause?\n\n")
+    cat(paste0(where_txt, collapse = "\n"), "\n\n")
+    choice <- utils::menu(
+      choices = c("Collect data", "Show full SQL", "Cancel"),
+      title = "Select an option:")
+  } else {
+    choice <- 1
+  }
 
+  if (choice == 1) {
+    out <- qry |>
+      retrieve(limit = limit,
+               convert_julian = convert_julian,
+               convert_logicals = convert_logicals,
+               convert_column_names = convert_column_names)
+  } else if (choice == 2) {
+    cat("\nFull SQL:\n\n")
+    show_query(qry)
+    out <- NULL
+  } else {
+    out <- NULL
+  }
+
+  out
+}
 
 #' @section Picking Columns with `db$`:
 #' Always use the `db` object (a [list]) to pick database columns for filtering. It contains all GLIMS column names. They must **always** be preceded by the injection operator [`!!`][rlang::injection-operator] (pronounced "bang-bang"). For example:
@@ -296,6 +324,7 @@ datetime_to_oracle_julian <- function(x) {
 }
 
 #' @param qry_type Type of query, see `Query Types` below.
+#' @param additional_columns Character vector of additional column names to return.
 #' @param only_include_labs Laboratories to include, defaults to only `"Medische Microbiologie"`. This sets a `WHERE` on `DEPARTMENT.DEPTNAME`.
 #' @section Query Types:
 #' Various query types have been defined:
@@ -311,7 +340,7 @@ datetime_to_oracle_julian <- function(x) {
 #' @importFrom dplyr select filter everything any_of
 #' @rdname db
 #' @export
-build_query <- function(con, ..., qry_type = "results", only_include_labs = "Medische Microbiologie") {
+build_query <- function(con, ..., qry_type = "results", additional_columns = character(0), only_include_labs = "Medische Microbiologie") {
   with_cli_status(
     msg = "Building query",
     expr = {
@@ -327,41 +356,42 @@ build_query <- function(con, ..., qry_type = "results", only_include_labs = "Med
         # Start from RESULT, and join REQUEST and ORDER_ from there
         full_qry <- con |>
           glims_tbl("RESULT") |>
-          glims_join_tbl("REQUEST",   by = c("RSLT_ORDER"     = "RQST_ORDER")) |>
-          glims_join_tbl("ORDER_",    by = c("RSLT_ORDER"     = "ORD_ID"))
+          glims_join_tbl("REQUEST",   by = c("RSLT_ORDER"     = "RQST_ORDER"), keep = TRUE) |>
+          glims_join_tbl("ORDER_",    by = c("RSLT_ORDER"     = "ORD_ID"),     keep = TRUE)
       } else {
         full_qry <- con |>
           # Start from REQUEST, the ERD shows REQUEST is the hub that ties to SPECIMEN and ORDER_
           # NOTE! Starting from ORDER_ will also be very slow
           glims_tbl("REQUEST") |>
-          glims_join_tbl("ORDER_",    by = c("RQST_ORDER"      = "ORD_ID"))
+          glims_join_tbl("ORDER_",    by = c("RQST_ORDER"      = "ORD_ID"), keep = TRUE)
       }
 
       # always add these
       full_qry <- full_qry |>
-        glims_join_tbl("ENCOUNTER",   by = c("ORD_ENCOUNTER"   = "ENCT_ID")) |>
-        glims_join_tbl("DEPARTMENT",  by = c("ORD_DEPARTMENT"  = "DEPT_ID")) |>
-        glims_join_tbl("PERSON",      by = c("ENCT_PERSON"     = "PRSN_ID")) |>
-        glims_join_tbl("SPECIMEN",    by = c("RQST_SPECIMEN"   = "SPMN_ID")) |>
-        glims_join_tbl("MATERIAL",    by = c("SPMN_MATERIAL"   = "MAT_ID")) |>
-        glims_join_tbl("STAY",        by = c("ORD_ENCOUNTER"   = "STAY_ENCOUNTER")) |>
-        glims_join_tbl("WARD",        by = c("STAY_WARD"       = "WARD_ID")) |>
-        glims_join_tbl("SPECIALISM",  by = c("STAY_SPECIALISM" = "SPEC_ID")) |>
-        glims_join_tbl("HCPROVIDER",  by = c("ENCT_PHYSICIAN"  = "HCPR_ID"))
+        glims_join_tbl("ENCOUNTER",   by = c("ORD_ENCOUNTER"   = "ENCT_ID"),        keep = TRUE) |>
+        glims_join_tbl("DEPARTMENT",  by = c("ORD_DEPARTMENT"  = "DEPT_ID"),        keep = TRUE) |>
+        glims_join_tbl("PERSON",      by = c("ENCT_PERSON"     = "PRSN_ID"),        keep = TRUE) |>
+        glims_join_tbl("SPECIMEN",    by = c("RQST_SPECIMEN"   = "SPMN_ID"),        keep = TRUE) |>
+        glims_join_tbl("MATERIAL",    by = c("SPMN_MATERIAL"   = "MAT_ID"),         keep = TRUE) |>
+        glims_join_tbl("STAY",        by = c("ORD_ENCOUNTER"   = "STAY_ENCOUNTER"), keep = TRUE) |>
+        glims_join_tbl("WARD",        by = c("STAY_WARD"       = "WARD_ID"),        keep = TRUE) |>
+        glims_join_tbl("SPECIALISM",  by = c("STAY_SPECIALISM" = "SPEC_ID"),        keep = TRUE) |>
+        glims_join_tbl("HCPROVIDER",  by = c("ENCT_PHYSICIAN"  = "HCPR_ID"),        keep = TRUE)
 
       if ("results" %in% qry_type) {
         full_qry <- full_qry |>
-          glims_join_tbl("RESULTOUTPUT",    by = c("RSLT_ID"               = "RSTO_RESULT")) |>
-          glims_join_tbl("SC_USER",         by = c("RSLT_CONFIRMATIONUSER" = "USR_ID")) |>
-          glims_join_tbl("SC_USER",         by = c("RSLT_VALIDATIONUSER"   = "USR_ID"), suffix = c("_CONFIRMATION", "_VALIDATION")) |>
-          glims_join_tbl("PROPERTYOUTPUT",  by = c("RSTO_PROPERTYOUTPUT"   = "PRPO_ID")) |>
-          glims_join_tbl("PROCEDUREOUTPUT", by = c("PRPO_PROCEDUREOUTPUT"  = "PRCO_ID")) |>
-          glims_join_tbl("PROPERTY",        by = c("RSLT_PROPERTY"         = "PROP_ID")) |>
-          glims_join_tbl("PROCEDURE_",      by = c("PRCO_PROCEDURE"        = "PROC_ID")) |>
-          glims_join_tbl("STATION",         by = c("PROC_STATION"          = "STN_ID")) |>
-          glims_join_tbl("WORKPLACE",       by = c("STN_WORKPLACE"         = "WRKP_ID")) |>
-          glims_join_tbl("CHOICE",          by = c("RSLT_CHOICE"           = "CHC_ID"))
+          glims_join_tbl("RESULTOUTPUT",    by = c("RSLT_ID"               = "RSTO_RESULT"), keep = TRUE) |>
+          glims_join_tbl("SC_USER",         by = c("RSLT_CONFIRMATIONUSER" = "USR_ID"),      keep = TRUE) |>
+          glims_join_tbl("SC_USER",         by = c("RSLT_VALIDATIONUSER"   = "USR_ID"),      keep = TRUE, suffix = c("_CONFIRMATION", "_VALIDATION")) |>
+          glims_join_tbl("PROPERTYOUTPUT",  by = c("RSTO_PROPERTYOUTPUT"   = "PRPO_ID"),     keep = TRUE) |>
+          glims_join_tbl("PROCEDUREOUTPUT", by = c("PRPO_PROCEDUREOUTPUT"  = "PRCO_ID"),     keep = TRUE) |>
+          glims_join_tbl("PROPERTY",        by = c("RSLT_PROPERTY"         = "PROP_ID"),     keep = TRUE) |>
+          glims_join_tbl("PROCEDURE_",      by = c("PRCO_PROCEDURE"        = "PROC_ID"),     keep = TRUE) |>
+          glims_join_tbl("STATION",         by = c("PROC_STATION"          = "STN_ID"),      keep = TRUE) |>
+          glims_join_tbl("WORKPLACE",       by = c("STN_WORKPLACE"         = "WRKP_ID"),     keep = TRUE) |>
+          glims_join_tbl("CHOICE",          by = c("RSLT_CHOICE"           = "CHC_ID"),      keep = TRUE)
       }
+
 
       # FILTER ----
       full_qry <- full_qry |>
@@ -389,6 +419,17 @@ build_query <- function(con, ..., qry_type = "results", only_include_labs = "Med
             !RSLT_RAWVALUE %in% c("Klaar", ".")
           )
       }
+
+      # user-defined
+      filters <- rlang::enquos(...)
+      if (length(filters) > 0) {
+        str <- paste0(as.character(unlist(filters)), collapse = "")
+        if (grepl("db$", str, fixed = TRUE)) {
+          stop("Did you forget `!!` to use with `db$`? Use `!!db$...` instead.", call. = FALSE)
+        }
+        full_qry <- full_qry |> filter(filters)
+      }
+
 
       # SELECT ----
       order_cols <- c("ORD_ID" = ifelse("results" %in% qry_type, "RSLT_ORDER", "RQST_ORDER"),
@@ -445,17 +486,7 @@ build_query <- function(con, ..., qry_type = "results", only_include_labs = "Med
       }
 
       full_qry <- full_qry |>
-        select(select_cols)
-
-      # FILTER USER-DEFINED
-      filters <- rlang::enquos(...)
-      if (length(filters) > 0) {
-        str <- paste0(as.character(unlist(filters)), collapse = "")
-        if (grepl("db$", str, fixed = TRUE)) {
-          stop("Did you forget `!!` to use with `db$`? Use `!!db$...` instead.", call. = FALSE)
-        }
-        full_qry <- full_qry |> filter(filters)
-      }
+        select(select_cols, as.character(additional_columns))
 
     })
   full_qry
@@ -489,7 +520,7 @@ retrieve <- function(qry,
   start_the_clock <- Sys.time()
 
   with_cli_status(
-    msg = "Running query",
+    msg = "Collecting data",
     expr = {
       if (is.infinite(limit)) {
         out <- qry |> collect()
@@ -513,6 +544,9 @@ retrieve <- function(qry,
       msg = "Converting 1/0 to TRUE/FALSE",
       expr = {
         for (i in seq_along(out)) {
+          if (grepl("SEX", colnames(out)[i])) {
+            next
+          }
           col <- out[[i]]
           if (is.numeric(col)) {
             # Limit check to first non-NA values
@@ -532,19 +566,20 @@ retrieve <- function(qry,
 
   if (convert_column_names == TRUE) {
     with_cli_status(
-      msg = "Converting columns names",
+      msg = "Converting column names",
       expr = {
         f <- system.file("readable_column_names.csv", package = "mmbi.epi")
         new_names <- utils::read.csv(f, strip.white = TRUE)
-        matched <- match(names(out), new_names$original)
-        names(out)[!is.na(matched)] <- new_names$new[matched[!is.na(matched)]]
+        matched <- match(names(out), new_names$COLUMN_NAME)
+        names(out)[!is.na(matched)] <- new_names$NEW_COLUMN_NAME[matched[!is.na(matched)]]
       })
   }
 
-  cli::cli_alert_info(paste0("Done in ", format(round(difftime(Sys.time(), start_the_clock), 2)),
-                             ", returning ", format(NROW(out), big.mark = ","), " x ", format(NCOL(out), big.mark = ","), " observations"))
-  # message(" -> Done in ", format(round(difftime(Sys.time(), start_the_clock), 2)),
-  #         ", returning ", format(NROW(out), big.mark = ","), " x ", format(NCOL(out), big.mark = ","), " observations")
+  cli::cli_alert_success(
+    cli::style_bold(
+      cli::col_blue(
+        paste0("Done in ", format(round(difftime(Sys.time(), start_the_clock), 2)),
+               ", returning ", format_dimensions(dim(out)), " observations"))))
 
   structure(out,
             class = c("mmbi_database_download", class(out)),
@@ -731,19 +766,26 @@ format_dimensions <- function(dims) {
                   format = "d",
                   preserve.width = "individual")
   dims <- trimws(paste0(" ", dims, " ", collapse = cli::symbol$times))
+  dims
 }
 
 with_cli_status <- function(msg, expr, time = TRUE) {
   start_time <- Sys.time()
 
+  geruntive <- function(x) {
+    x <- gsub("Building", "Built", x)
+    x <- gsub("ing", "ed", x)
+    x
+  }
+
   cli::cli_process_start(msg = paste0(ifelse(time == TRUE, paste0("[", format(start_time), "] "), ""),
                                       cli::style_bold(msg)),
                          msg_failed = paste0(ifelse(time == TRUE, paste0("[", format(start_time), "] "), ""),
-                                             cli::col_red(paste0(cli::style_bold(msg), " !ERROR"))))
+                                             cli::col_red(paste0(cli::style_bold(msg), " [ERROR]"))))
   result <- tryCatch({
     val <- force(expr)
     cli::cli_process_done(msg_done = paste0(ifelse(time == TRUE, paste0("[", format(start_time), "] "), ""),
-                                            paste0(cli::col_green(cli::style_bold(msg)), " (", format(round(difftime(Sys.time(), start_time), 2)), ")")))
+                                            paste0(cli::col_green(cli::style_bold(geruntive(msg))), " (", format(round(difftime(Sys.time(), start_time), 2)), ")")))
     val
   }, error = function(e) {
     cli::cli_process_failed(e$message)

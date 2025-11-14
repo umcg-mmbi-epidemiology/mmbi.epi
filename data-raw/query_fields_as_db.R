@@ -5,6 +5,7 @@ library(dplyr)
 
 readable_col_names <- read.csv(system.file("readable_column_names.csv", package = "mmbi.epi"), strip.white = TRUE)
 full_table_overview <- read.delim("data-raw/full_table_overview.txt") |>
+  # these tables all occur in R/db.R, so include them as they allow filters
   filter(TABLE_NAME %in% c("REQUEST",
                            "RESULT",
                            "ORDER_",
@@ -28,6 +29,18 @@ full_table_overview <- read.delim("data-raw/full_table_overview.txt") |>
                            "CHOICE")) |>
   left_join(readable_col_names, by = "COLUMN_NAME") |>
   mutate(nm = paste0(TABLE_NAME, ".", COLUMN_NAME))
+
+# since we are joining SC_USER with suffices "_CONFIRMATION" and "_VALIDATION", update this
+full_table_overview <- full_table_overview |>
+  mutate(COLUMN_NAME = ifelse(TABLE_NAME == "SC_USER", paste0(COLUMN_NAME, "_CONFIRMATION"), COLUMN_NAME),
+         nm = ifelse(TABLE_NAME == "SC_USER", COLUMN_NAME, nm)) |>
+  bind_rows(
+    full_table_overview |>
+      filter(TABLE_NAME == "SC_USER") |>
+      mutate(COLUMN_NAME = paste0(COLUMN_NAME, "_VALIDATION"),
+             nm = COLUMN_NAME)
+  ) |>
+  arrange(TABLE_NAME, COLUMN_ID)
 
 part1 <- lapply(full_table_overview$COLUMN_NAME, str2lang)
 names(part1) <- full_table_overview$nm
