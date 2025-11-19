@@ -24,7 +24,9 @@ get_glims_data(
   limit = Inf,
   qry_type = c("results", "orders"),
   db = "Oracle",
-  only_include_labs = "Medische Microbiologie"
+  only_include_labs = "Medische Microbiologie",
+  ab_type = c("reported_sir", "raw_sir", "raw_mic", "raw_disk", "raw_etest"),
+  review_qry = interactive()
 )
 
 db
@@ -57,7 +59,8 @@ retrieve(
   limit = Inf,
   convert_julian = TRUE,
   convert_logicals = TRUE,
-  convert_column_names = TRUE
+  convert_column_names = TRUE,
+  message_text = "Collecting data"
 )
 
 retrieve_query(x)
@@ -71,11 +74,13 @@ search_for_ward(db = "Oracle")
 search_for_specialism(db = "Oracle")
 
 search_for_physician(db = "Oracle")
+
+search_for_microorganism(db = "Oracle")
 ```
 
 ## Format
 
-An object of class `list` of length 892.
+An object of class `list` of length 1075.
 
 ## Arguments
 
@@ -140,6 +145,16 @@ An object of class `list` of length 892.
   Laboratories to include, defaults to only `"Medische Microbiologie"`.
   This sets a `WHERE` on `DEPARTMENT.DEPTNAME`.
 
+- ab_type:
+
+  Type of AMR results to return. Defaults to `"reported_sir"` to reflect
+  the final lab result. Can also be `"raw_sir"`, `"raw_mic"`,
+  `"raw_disk"`, or `"raw_etest"`.
+
+- review_qry:
+
+  Logical to indicate whether the query must be reviewed before running.
+
 - qry:
 
   A `tbl_dbi` object representing the database query.
@@ -179,6 +194,10 @@ An object of class `list` of length 892.
 - n:
 
   Number of rows to collect.
+
+- message_text:
+
+  Text to show in the console while retrieving data.
 
 ## Value
 
@@ -242,7 +261,7 @@ Various query types have been defined:
 
     - `"isolates"`: 1 row per isolate, can be multiple in a result
 
-      - `"cultures"`: 1 row per carrier (such as an agar plate), can be
+      - `"carriers"`: 1 row per carrier (such as an agar plate), can be
         multiple of an isolate
 
     - `"microscopy"`: 1 row per microscopy result, can be multiple in a
@@ -310,17 +329,17 @@ disconnect_db(conn)
 # Other ----------------------------------------------------------------
 
 datetime_to_oracle_julian(Sys.Date())
-#> [1] 2460994
+#> [1] 2460999
 
 Sys.Date()
-#> [1] "2025-11-14"
+#> [1] "2025-11-19"
 Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2025-11-14"
+#> [1] "2025-11-19"
 
 Sys.time()
-#> [1] "2025-11-14 09:24:34 UTC"
+#> [1] "2025-11-19 14:57:33 UTC"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2025-11-14 10:24:34 CET"
+#> [1] "2025-11-19 15:57:33 CET"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
-#> [1] "2025-11-14 09:24:34 UTC"
+#> [1] "2025-11-19 14:57:33 UTC"
 ```

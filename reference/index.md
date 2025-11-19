@@ -19,6 +19,7 @@
   [`search_for_ward()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
   [`search_for_specialism()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
   [`search_for_physician()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
+  [`search_for_microorganism()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
   : GLIMS Database Access
 - [`geo_gemeenten`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
   [`geo_ggdregios`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
