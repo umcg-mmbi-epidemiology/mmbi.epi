@@ -6,6 +6,10 @@ Name: 🩸 Search GLIMS for specimen...
 Binding: search_for_specimen
 Interactive: true
 
+Name: 🦠 Search GLIMS for microorganism...
+Binding: search_for_microorganism
+Interactive: true
+
 Name: 👩 Search GLIMS for physician...
 Binding: search_for_physician
 Interactive: true

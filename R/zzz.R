@@ -17,12 +17,20 @@
 # ===================================================================== #
 
 # these are mentioned as objects, putting them in globalVariables() prevents a note in R CMD CHECK
-globalVariables(c("ORD_RECEIPTTIME",
-                  "username",
+globalVariables(c("ab_col",
+                  "AB_NAME",
+                  "ABRS_AGARDIFFUSIONRAWVALUE",
+                  "ABRS_ETESTRAWVALUE",
+                  "ABRS_MICRAWVALUE",
+                  "ABRS_RISRAWVALUE",
+                  "ABRS_RISREPORTVALUE",
                   "age_group",
                   "CHCL_FREETEXTALLOWED",
                   "CHCL_NAME",
+                  "dbname",
+                  "DEPT_NAME",
                   "DIM_NAME",
+                  "ENCT_PERSON",
                   "free_text",
                   "HCPR_BIRTHDATE",
                   "HCPR_FIRSTNAME",
@@ -33,26 +41,27 @@ globalVariables(c("ORD_RECEIPTTIME",
                   "MAT_COMMENT",
                   "MAT_MNEMONIC",
                   "MAT_SHORTNAME",
+                  "MORG_MNEMONIC",
+                  "MORG_NAME",
+                  "MORG_SHORTNAME",
+                  "ORD_RECEIPTTIME",
                   "PROP_ID",
                   "PROP_MNEMONIC",
                   "PROP_SHORTNAME",
+                  "RSLT_RAWVALUE",
+                  "servername",
                   "SPEC_MNEMONIC",
                   "SPEC_NAME",
-                  "UNIT_NAME",
-                  "WARD_MNEMONIC",
-                  "WARD_NAME",
-                  "dbname",
-                  "servername",
-                  "DEPT_NAME",
-                  "ENCT_PERSON",
-                  "RSLT_RAWVALUE",
                   "SPMN_INTERNALID",
                   "SPMN_SAMPLINGTIME",
                   "STAY_ENDTIME",
                   "STAY_STARTTIME",
-                  "STN_MNEMONIC"))
+                  "STN_MNEMONIC",
+                  "UNIT_NAME",
+                  "username",
+                  "WARD_MNEMONIC",
+                  "WARD_NAME"))
 
-#' @importFrom plot2 register_colour
 .onLoad <- function(...) {
   # load sf namespace on load, so that:
   # - `certegis` geographic data sets will print correctly
@@ -63,7 +72,6 @@ globalVariables(c("ORD_RECEIPTTIME",
   register_umcg_plot_style()
 }
 
-#' @importFrom plot2 unregister_colour
 .onUnload <- function(...) {
   unregister_umcg_plot_style()
 }

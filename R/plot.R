@@ -59,6 +59,7 @@ scale_fill_umcg <- function(..., n) {
   ggplot2::scale_fill_manual(values = get_colour("umcg", length = n), ...)
 }
 
+#' @importFrom plot2 register_colour
 #' @rdname plot_style_umcg
 #' @export
 register_umcg_plot_style <- function() {
@@ -83,6 +84,7 @@ register_umcg_plot_style <- function() {
           plot2.font = "Outfit") # 'Outfit', a Google Font, is the official UMCG font
 }
 
+#' @importFrom plot2 unregister_colour
 #' @rdname plot_style_umcg
 #' @export
 unregister_umcg_plot_style <- function() {

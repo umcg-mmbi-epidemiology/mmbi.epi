@@ -26,7 +26,16 @@ full_table_overview <- read.delim("data-raw/full_table_overview.txt") |>
                            "PROCEDURE_",
                            "STATION",
                            "WORKPLACE",
-                           "CHOICE")) |>
+                           "CHOICE",
+                           # isolation
+                           "ISOLATION",
+                           "MICROORGANISM" #,
+                           # hieronder nog niet, kun je niet op querien
+                           # "CARRIER",
+                           # "MEDIUM",
+                           # "ANTIBIOTICRESULT",
+                           # "ANTIBIOTIC"
+  )) |>
   left_join(readable_col_names, by = "COLUMN_NAME") |>
   mutate(nm = paste0(TABLE_NAME, ".", COLUMN_NAME))
 
@@ -51,3 +60,10 @@ names(part2) <- full_table_overview$NEW_COLUMN_NAME[!is.na(full_table_overview$N
 db <- c(part2, part1)
 
 saveRDS(db, "inst/db.rds")
+message("Saved to 'inst/db.rds'")
+
+rm(db)
+rm(part1)
+rm(part2)
+rm(full_table_overview)
+rm(readable_col_names)

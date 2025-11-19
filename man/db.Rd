@@ -19,9 +19,10 @@
 \alias{search_for_ward}
 \alias{search_for_specialism}
 \alias{search_for_physician}
+\alias{search_for_microorganism}
 \title{GLIMS Database Access}
 \format{
-An object of class \code{list} of length 892.
+An object of class \code{list} of length 1075.
 }
 \usage{
 connect_db(db = "Oracle")
@@ -40,7 +41,9 @@ get_glims_data(
   limit = Inf,
   qry_type = c("results", "orders"),
   db = "Oracle",
-  only_include_labs = "Medische Microbiologie"
+  only_include_labs = "Medische Microbiologie",
+  ab_type = c("reported_sir", "raw_sir", "raw_mic", "raw_disk", "raw_etest"),
+  review_qry = interactive()
 )
 
 db
@@ -73,7 +76,8 @@ retrieve(
   limit = Inf,
   convert_julian = TRUE,
   convert_logicals = TRUE,
-  convert_column_names = TRUE
+  convert_column_names = TRUE,
+  message_text = "Collecting data"
 )
 
 retrieve_query(x)
@@ -87,6 +91,8 @@ search_for_ward(db = "Oracle")
 search_for_specialism(db = "Oracle")
 
 search_for_physician(db = "Oracle")
+
+search_for_microorganism(db = "Oracle")
 }
 \arguments{
 \item{db}{Database to connect to.}
@@ -118,6 +124,10 @@ search_for_physician(db = "Oracle")
 
 \item{only_include_labs}{Laboratories to include, defaults to only \code{"Medische Microbiologie"}. This sets a \code{WHERE} on \code{DEPARTMENT.DEPTNAME}.}
 
+\item{ab_type}{Type of AMR results to return. Defaults to \code{"reported_sir"} to reflect the final lab result. Can also be \code{"raw_sir"}, \code{"raw_mic"}, \code{"raw_disk"}, or \code{"raw_etest"}.}
+
+\item{review_qry}{Logical to indicate whether  the query must be reviewed before running.}
+
 \item{qry}{A \code{tbl_dbi} object representing the database query.}
 
 \item{by}{Column name(s) to join by. Can be a named vector to allow different names:\cr  \code{by = c("col_A" = "col_B")}.}
@@ -135,6 +145,8 @@ search_for_physician(db = "Oracle")
 \item{tz}{Target time zone.}
 
 \item{n}{Number of rows to collect.}
+
+\item{message_text}{Text to show in the console while retrieving data.}
 }
 \value{
 Returns a live \code{DBIConnection} object that can be used with \code{DBI}, \code{dplyr}, or \code{dbplyr} for querying and manipulating data.
@@ -183,7 +195,7 @@ Various query types have been defined:
 \itemize{
 \item \code{"isolates"}: 1 row per isolate, can be multiple in a result
 \itemize{
-\item \code{"cultures"}: 1 row per carrier (such as an agar plate), can be multiple of an isolate
+\item \code{"carriers"}: 1 row per carrier (such as an agar plate), can be multiple of an isolate
 }
 \item \code{"microscopy"}: 1 row per microscopy result, can be multiple in a result
 }
