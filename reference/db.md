@@ -337,9 +337,9 @@ Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
 #> [1] "2025-11-19"
 
 Sys.time()
-#> [1] "2025-11-19 14:57:33 UTC"
+#> [1] "2025-11-19 15:08:35 UTC"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2025-11-19 15:57:33 CET"
+#> [1] "2025-11-19 16:08:35 CET"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
-#> [1] "2025-11-19 14:57:33 UTC"
+#> [1] "2025-11-19 15:08:35 UTC"
 ```
