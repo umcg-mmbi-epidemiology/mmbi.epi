@@ -234,38 +234,42 @@ get_glims_data <- function(date_range = NULL,
 
   # get isolates/carriers if requested
   if (any(c("isolates", "carriers") %in% qry_type.bak)) {
-    qry_ab <- con |>
-      build_query(
-        db$ISOLATION.ISOL_SPECIMEN %in% !!out$ISOL_SPECIMEN,
-        qry_type = intersect(qry_type.bak, c("isolates", "carriers")),
-        additional_columns = character(0))
-    out_ab <- qry_ab |>
-      retrieve(limit = Inf,
-               convert_julian = FALSE,
-               convert_logicals = FALSE,
-               convert_column_names = convert_column_names,
-               message_text = "Collecting isolates data")
-
-    if (ab_type == "reported_sir") {
-      out_ab <- out_ab |> mutate(ab_col = AMR::as.sir(c("S", "I", "R")[ABRS_RISREPORTVALUE]))
-    } else if (ab_type == "raw_sir") {
-      out_ab <- out_ab |> mutate(ab_col = AMR::as.sir(c("S", "I", "R")[ABRS_RISRAWVALUE]))
-    } else if (ab_type == "raw_mic") {
-      out_ab <- out_ab |> mutate(ab_col = AMR::as.mic(ABRS_MICRAWVALUE))
-    } else if (ab_type == "raw_etest") {
-      out_ab <- out_ab |> mutate(ab_col = AMR::as.mic(ABRS_ETESTRAWVALUE))
-    } else if (ab_type == "raw_disk") {
-      out_ab <- out_ab |> mutate(ab_col = AMR::as.disk(ABRS_AGARDIFFUSIONRAWVALUE))
+    if (NROW(out) == 0) {
+      with_cli_status("Skipping isolates data, since row count = 0", "")
     } else {
-      warning("invalid ab_type, ignoring")
-    }
+      qry_ab <- con |>
+        build_query(
+          db$ISOLATION.ISOL_SPECIMEN %in% !!out$ISOL_SPECIMEN,
+          qry_type = intersect(qry_type.bak, c("isolates", "carriers")),
+          additional_columns = character(0))
+      out_ab <- qry_ab |>
+        retrieve(limit = Inf,
+                 convert_julian = FALSE,
+                 convert_logicals = FALSE,
+                 convert_column_names = convert_column_names,
+                 message_text = "Collecting isolates data")
 
-    out_ab <- out_ab |>
-      pivot_wider(names_from = AB_NAME,
-                  values_from = ab_col,
-                  id_cols = -c(starts_with("ABRS_"), starts_with("AB_")))
-    out <- out |>
-      left_join(out_ab, by = "ISOL_SPECIMEN")
+      if (ab_type == "reported_sir") {
+        out_ab <- out_ab |> mutate(ab_col = AMR::as.sir(c("S", "I", "R")[ABRS_RISREPORTVALUE]))
+      } else if (ab_type == "raw_sir") {
+        out_ab <- out_ab |> mutate(ab_col = AMR::as.sir(c("S", "I", "R")[ABRS_RISRAWVALUE]))
+      } else if (ab_type == "raw_mic") {
+        out_ab <- out_ab |> mutate(ab_col = AMR::as.mic(ABRS_MICRAWVALUE))
+      } else if (ab_type == "raw_etest") {
+        out_ab <- out_ab |> mutate(ab_col = AMR::as.mic(ABRS_ETESTRAWVALUE))
+      } else if (ab_type == "raw_disk") {
+        out_ab <- out_ab |> mutate(ab_col = AMR::as.disk(ABRS_AGARDIFFUSIONRAWVALUE))
+      } else {
+        warning("invalid ab_type, ignoring")
+      }
+
+      out_ab <- out_ab |>
+        pivot_wider(names_from = AB_NAME,
+                    values_from = ab_col,
+                    id_cols = -c(starts_with("ABRS_"), starts_with("AB_")))
+      out <- out |>
+        left_join(out_ab, by = "ISOL_SPECIMEN")
+    }
   }
 
 
