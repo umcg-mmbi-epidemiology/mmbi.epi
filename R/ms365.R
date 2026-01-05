@@ -88,7 +88,7 @@ get_ms365_group <- function(group_name = "MMBI Unit Epidemiologie & Data Science
     error = function(e) NULL
   )
   if (is.null(login)) {
-    login <- create_graph_login(tenant = "umcgonline")
+    login <- create_graph_login(tenant = "umcgonline", auth_type = "device_code")
   }
   login$get_group(name = group_name)
 }

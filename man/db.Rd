@@ -22,7 +22,7 @@
 \alias{search_for_microorganism}
 \title{GLIMS Database Access}
 \format{
-An object of class \code{list} of length 1075.
+An object of class \code{list} of length 985.
 }
 \usage{
 connect_db(db = "Oracle")
@@ -107,7 +107,9 @@ search_for_microorganism(db = "Oracle")
 
 \item{...}{\itemize{
 \item \code{\link[=glims_join_tbl]{glims_join_tbl()}}: Arguments passed on the join functions.
-.  * Otherwise: Arguments passed on the \code{WHERE} clause in the query. Supports \code{dplyr} language.
+\itemize{
+\item Otherwise: Arguments passed on the \code{WHERE} clause in the query. Supports \code{dplyr} language.
+}
 }}
 
 \item{additional_columns}{Character vector of additional column names to return.}

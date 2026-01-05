@@ -198,6 +198,7 @@ get_glims_data <- function(date_range = NULL,
       if (date_range[2] %in% 2010:2050) {
         date_range[2] <- as.character(as.Date(paste0(date_range[2], "-12-31")))
       }
+      date_range.bak <- date_range
       date_range <- datetime_to_oracle_julian(as.Date(date_range))
       date_range[2] <- date_range[2] + 1 - 1e-10 # include full end date
       qry <- qry |>
@@ -210,6 +211,9 @@ get_glims_data <- function(date_range = NULL,
     where_txt <- as.character(sql_build(qry)$where)
     cat("Collect the data using this WHERE clause?\n\n")
     cat(paste0(where_txt, collapse = "\n"), "\n\n")
+    if (!is.null(date_range)) {
+      cat(paste0("This corresponds to date range: ", format(date_range.bak[1]), " to ", format(date_range.bak[2])), "\n\n")
+    }
     choice <- utils::menu(
       choices = c("Collect data", "Show full SQL", "Cancel"),
       title = "Select an option:")
@@ -249,29 +253,37 @@ get_glims_data <- function(date_range = NULL,
                  convert_column_names = convert_column_names,
                  message_text = "Collecting isolates data")
 
-      if (ab_type == "reported_sir") {
-        out_ab <- out_ab |> mutate(ab_col = AMR::as.sir(c("S", "I", "R")[ABRS_RISREPORTVALUE]))
-      } else if (ab_type == "raw_sir") {
-        out_ab <- out_ab |> mutate(ab_col = AMR::as.sir(c("S", "I", "R")[ABRS_RISRAWVALUE]))
-      } else if (ab_type == "raw_mic") {
-        out_ab <- out_ab |> mutate(ab_col = AMR::as.mic(ABRS_MICRAWVALUE))
-      } else if (ab_type == "raw_etest") {
-        out_ab <- out_ab |> mutate(ab_col = AMR::as.mic(ABRS_ETESTRAWVALUE))
-      } else if (ab_type == "raw_disk") {
-        out_ab <- out_ab |> mutate(ab_col = AMR::as.disk(ABRS_AGARDIFFUSIONRAWVALUE))
-      } else {
-        warning("invalid ab_type, ignoring")
-      }
+      with_cli_status(msg = "Pivoting isolates data",
+                      expr = {
+                        if (ab_type == "reported_sir") {
+                          out_ab <- out_ab |> mutate(ab_col = AMR::as.sir(c("R", "I", "S")[ABRS_RISREPORTVALUE]))
+                        } else if (ab_type == "raw_sir") {
+                          out_ab <- out_ab |> mutate(ab_col = AMR::as.sir(c("R", "I", "S")[ABRS_RISRAWVALUE]))
+                        } else if (ab_type == "raw_mic") {
+                          out_ab <- out_ab |> mutate(ab_col = AMR::as.mic(ABRS_MICRAWVALUE))
+                        } else if (ab_type == "raw_etest") {
+                          out_ab <- out_ab |> mutate(ab_col = AMR::as.mic(ABRS_ETESTRAWVALUE))
+                        } else if (ab_type == "raw_disk") {
+                          out_ab <- out_ab |> mutate(ab_col = AMR::as.disk(ABRS_AGARDIFFUSIONRAWVALUE))
+                        } else {
+                          warning("invalid ab_type, ignoring")
+                        }
 
-      out_ab <- out_ab |>
-        pivot_wider(names_from = AB_NAME,
-                    values_from = ab_col,
-                    id_cols = -c(starts_with("ABRS_"), starts_with("AB_")))
-      out <- out |>
-        left_join(out_ab, by = "ISOL_SPECIMEN")
+                        out_ab <- out_ab |>
+                          pivot_wider(names_from = AB_NAME,
+                                      values_from = ab_col,
+                                      id_cols = -c(starts_with("ABRS_"), starts_with("AB_")))
+                        out <- out |>
+                          left_join(out_ab, by = "ISOL_SPECIMEN")
+                      }
+      )
     }
   }
 
+  cli::cli_alert_success(
+    cli::style_bold(
+      cli::col_blue(
+        paste0("Returning ", format_dimensions(dim(out)), " observations"))))
 
   out
 }
@@ -297,7 +309,7 @@ db <- readRDS(system.file("db.rds", package = "mmbi.epi"))
 #' @param by Column name(s) to join by. Can be a named vector to allow different names:\cr  `by = c("col_A" = "col_B")`.
 #' @param ...
 #'   * [glims_join_tbl()]: Arguments passed on the join functions.
-#'.  * Otherwise: Arguments passed on the `WHERE` clause in the query. Supports `dplyr` language.
+#'   * Otherwise: Arguments passed on the `WHERE` clause in the query. Supports `dplyr` language.
 #' @param type Direction of the join, defaults to `"left"`.
 #' * [`"inner"`][dplyr::inner_join()]: returns matched x rows.
 #' * [`"left"`][dplyr::left_join()]: returns all x rows.
@@ -404,7 +416,7 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
       # supported_qry_types <- c("orders", "stays", "results", "isolates", "carriers", "microscopy")
       supported_qry_types <- c("orders", "stays", "results", "isolates", "carriers")
       if (!all(qry_type %in% supported_qry_types)) {
-        stop("Unspported query type, allowed are: ", toString(supported_qry_types), call. = FALSE)
+        stop("Unsupported query type, allowed are: ", toString(supported_qry_types), call. = FALSE)
       }
 
       if ("carriers" %in% qry_type) {
@@ -441,16 +453,17 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
           # Start from REQUEST, the ERD shows REQUEST is the hub that ties to SPECIMEN and ORDER_
           # NOTE! Starting from ORDER_ will also be very slow
           glims_tbl("REQUEST") |>
-          glims_join_tbl("ORDER_",    by = c("RQST_ORDER"      = "ORD_ID"), keep = TRUE)
+          glims_join_tbl("ORDER_",    by = c("RQST_ORDER"      = "ORD_ID"),    keep = TRUE)
       }
 
       # always add these if not looking for isolates
       if (!"isolates" %in% qry_type) {
         full_qry <- full_qry |>
+          # glims_join_tbl("SPECIMEN", by = c("ORD_OBJECT" = "SPMN_OBJECT"), keep = TRUE) |>
+          glims_join_tbl("SPECIMEN",    by = c("RQST_SPECIMEN"   = "SPMN_ID"),        keep = TRUE) |>
           glims_join_tbl("ENCOUNTER",   by = c("ORD_ENCOUNTER"   = "ENCT_ID"),        keep = TRUE) |>
           glims_join_tbl("DEPARTMENT",  by = c("ORD_DEPARTMENT"  = "DEPT_ID"),        keep = TRUE) |>
           glims_join_tbl("PERSON",      by = c("ENCT_PERSON"     = "PRSN_ID"),        keep = TRUE) |>
-          glims_join_tbl("SPECIMEN",    by = c("RQST_SPECIMEN"   = "SPMN_ID"),        keep = TRUE) |>
           glims_join_tbl("MATERIAL",    by = c("SPMN_MATERIAL"   = "MAT_ID"),         keep = TRUE) |>
           glims_join_tbl("STAY",        by = c("ORD_ENCOUNTER"   = "STAY_ENCOUNTER"), keep = TRUE) |>
           glims_join_tbl("WARD",        by = c("STAY_WARD"       = "WARD_ID"),        keep = TRUE) |>
@@ -460,7 +473,7 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
 
       if ("results" %in% qry_type) {
         full_qry <- full_qry |>
-          glims_join_tbl("RESULTOUTPUT",    by = c("RSLT_ID"               = "RSTO_RESULT"),  keep = TRUE) |>
+          glims_join_tbl("RESULTOUTPUT",    by = c("RSLT_ID"               = "RSTO_RESULT"),   keep = TRUE) |>
           glims_join_tbl("SC_USER",         by = c("RSLT_CONFIRMATIONUSER" = "USR_ID"),        keep = TRUE) |>
           glims_join_tbl("SC_USER",         by = c("RSLT_VALIDATIONUSER"   = "USR_ID"),        keep = TRUE, suffix = c("_CONFIRMATION", "_VALIDATION")) |>
           glims_join_tbl("PROPERTYOUTPUT",  by = c("RSTO_PROPERTYOUTPUT"   = "PRPO_ID"),       keep = TRUE) |>
@@ -471,7 +484,7 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
           glims_join_tbl("WORKPLACE",       by = c("STN_WORKPLACE"         = "WRKP_ID"),       keep = TRUE) |>
           glims_join_tbl("CHOICE",          by = c("RSLT_CHOICE"           = "CHC_ID"),        keep = TRUE) |>
           # these two are only added to allow filtering on MOs - they are not returned in the select
-          glims_join_tbl("ISOLATION",       by = c("SPEC_ID"               = "ISOL_SPECIMEN"), keep = TRUE) |>
+          glims_join_tbl("ISOLATION",       by = c("SPMN_ID"               = "ISOL_SPECIMEN"), keep = TRUE) |>
           glims_join_tbl("MICROORGANISM",   by = c("ISOL_MICROORGANISM"    = "MORG_ID"),       keep = TRUE)
       }
 
@@ -480,7 +493,6 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
           glims_join_tbl("CARRIER",          by = c("ISOL_CARRIER" = "CARR_ID"),       keep = TRUE) |>
           glims_join_tbl("MEDIUM",           by = c("CARR_MEDIUM"  = "MDM_ID"),        keep = TRUE)
       }
-
 
       # FILTER ----
       if (!"isolates" %in% qry_type) {
@@ -494,10 +506,8 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
             DEPT_NAME %in% !!only_include_labs)
       }
 
-      # misschien nodig voor isolaten?
-      # filter(ISOL_OBJECT == ORD_OBJECT) |>
 
-      if (!"stay" %in% qry_type && !"isolates" %in% qry_type) {
+      if (!"stays" %in% qry_type && !"isolates" %in% qry_type) {
         # only keep the STAY records of the moment of specimen sampling
         full_qry <- full_qry |>
           filter(
@@ -509,7 +519,7 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
         full_qry <- full_qry |>
           filter(
             # only true results, no logbook items or microscopy
-            is.na(STN_MNEMONIC) | !STN_MNEMONIC %in% c("MB_Diversen", "MB_Microscopie", "MB_ANTIBIOGRAM"),
+            is.na(STN_MNEMONIC) | !STN_MNEMONIC %in% c("MB_Diversen", "MB_Microscopie"),
             !PROP_MNEMONIC %in% c("MB_ANTIBIOGRAM"),
             is.na(RSLT_RAWVALUE) | !RSLT_RAWVALUE %in% c("Klaar", ".")
           )
@@ -533,6 +543,7 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
                       "ORD_RECEIPTTIME",
                       "ISOL_SPECIMEN" = "SPMN_ID",
                       "SPMN_SAMPLINGTIME",
+                      "SPMN_SCOPE",
                       "MAT_SHORTNAME",
                       "MAT_MNEMONIC",
                       "ENCT_PERSON",
@@ -550,7 +561,7 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
                       "SPEC_MNEMONIC",
                       "SPEC_NAME")
 
-      if (!"stay" %in% qry_type) {
+      if (!"stays" %in% qry_type) {
         order_cols <- order_cols[!order_cols %in% c("STAY_STARTTIME", "STAY_ENDTIME")]
       }
 
@@ -562,6 +573,7 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
                        "RSLT_STATUS",
                        "PROP_MNEMONIC",
                        "PROP_SHORTNAME",
+                       "PROP_CODE",
                        "PROC_CODE",
                        "PROC_NAME",
                        "STN_MNEMONIC",
@@ -612,8 +624,10 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
         }
       }
 
-      full_qry <- full_qry |>
-        select(select_cols, as.character(additional_columns))
+      if (!identical(additional_columns, "all")) {
+        full_qry <- full_qry |>
+          select(select_cols, as.character(additional_columns))
+      }
 
     })
   full_qry
@@ -708,7 +722,7 @@ retrieve <- function(qry,
     cli::style_bold(
       cli::col_blue(
         paste0("Done in ", format(round(difftime(Sys.time(), start_the_clock), 2)),
-               ", returning ", format_dimensions(dim(out)), " observations"))))
+               ", collected ", format_dimensions(dim(out)), " observations"))))
 
   structure(out,
             class = c("mmbi_database_download", class(out)),
@@ -796,7 +810,7 @@ search_for <- function(db, type) {
       glims_tbl("MATERIAL") |>
       glims_join_tbl("UNIT", by = c("MAT_SIZEUNIT" = "UNIT_ID")) |>
       glims_join_tbl("DIMENSION", by = c("UNIT_DIMENSION" = "DIM_ID")) |>
-      select(MAT_MNEMONIC, MAT_SHORTNAME, MAT_COMMENT, unit = UNIT_NAME, dimension = DIM_NAME) |>
+      select(MAT_MNEMONIC, MAT_SHORTNAME, MAT_SAMPLINGCODE, MAT_COMMENT, unit = UNIT_NAME, dimension = DIM_NAME) |>
       collect()
   } else if (type == "WARD") {
     data <- con |>
