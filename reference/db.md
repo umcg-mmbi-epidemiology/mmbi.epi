@@ -80,7 +80,7 @@ search_for_microorganism(db = "Oracle")
 
 ## Format
 
-An object of class `list` of length 1075.
+An object of class `list` of length 985.
 
 ## Arguments
 
@@ -108,9 +108,10 @@ An object of class `list` of length 1075.
 
 - ...:
 
-  - `glims_join_tbl()`: Arguments passed on the join functions. . \*
-    Otherwise: Arguments passed on the `WHERE` clause in the query.
-    Supports `dplyr` language.
+  - `glims_join_tbl()`: Arguments passed on the join functions.
+
+    - Otherwise: Arguments passed on the `WHERE` clause in the query.
+      Supports `dplyr` language.
 
 - additional_columns:
 
@@ -329,17 +330,17 @@ disconnect_db(conn)
 # Other ----------------------------------------------------------------
 
 datetime_to_oracle_julian(Sys.Date())
-#> [1] 2460999
+#> [1] 2461046
 
 Sys.Date()
-#> [1] "2025-11-19"
+#> [1] "2026-01-05"
 Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2025-11-19"
+#> [1] "2026-01-05"
 
 Sys.time()
-#> [1] "2025-11-19 15:08:35 UTC"
+#> [1] "2026-01-05 12:22:35 UTC"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2025-11-19 16:08:35 CET"
+#> [1] "2026-01-05 13:22:35 CET"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
-#> [1] "2025-11-19 15:08:35 UTC"
+#> [1] "2026-01-05 12:22:35 UTC"
 ```
