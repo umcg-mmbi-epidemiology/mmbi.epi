@@ -1,6 +1,6 @@
 Package: mmbi.epi
 Title: Helper Functions for Unit Epidemiology & Data Science of UMCG MMBI Department
-Version: 0.0.9
+Version: 0.0.10
 Authors@R: c(
   person(given = c("Matthijs", "S."), 
          family = "Berends",

@@ -750,135 +750,7 @@ retrieve_query <- function(x) {
   invisible(qry)
 }
 
-#' @rdname db
-#' @export
-search_for_test <- function(db = "Oracle") {
-  search_for(db, "PROPERTY")
-}
-
-#' @rdname db
-#' @export
-search_for_specimen <- function(db = "Oracle") {
-  search_for(db, "MATERIAL")
-}
-
-#' @rdname db
-#' @export
-search_for_ward <- function(db = "Oracle") {
-  search_for(db, "WARD")
-}
-
-#' @rdname db
-#' @export
-search_for_specialism <- function(db = "Oracle") {
-  search_for(db, "SPECIALISM")
-}
-
-#' @rdname db
-#' @export
-search_for_physician <- function(db = "Oracle") {
-  search_for(db, "HCPROVIDER")
-}
-
-#' @rdname db
-#' @export
-search_for_microorganism <- function(db = "Oracle") {
-  search_for(db, "MICROORGANISM")
-}
-
-
 # OTHER FUNCTIONS ---------------------------------------------------------------------------------
-
-#' @importFrom dplyr select collect
-#' @importFrom plot2 get_colour
-search_for <- function(db, type) {
-  rlang::check_installed("shiny")
-  rlang::check_installed("DT")
-
-  con <- connect_db(db = db)
-  on.exit(disconnect_db(con))
-
-  if (type == "PROPERTY") {
-    data <- con |>
-      glims_tbl("PROPERTY") |>
-      glims_join_tbl("CHOICELIST", by = c("PROP_CHOICELIST" = "CHCL_ID")) |>
-      select(PROP_ID, PROP_MNEMONIC, PROP_SHORTNAME, output_type = CHCL_NAME, free_text = CHCL_FREETEXTALLOWED) |>
-      collect() |>
-      mutate(free_text = as.logical(free_text))
-  } else if (type == "MATERIAL") {
-    data <- con |>
-      glims_tbl("MATERIAL") |>
-      glims_join_tbl("UNIT", by = c("MAT_SIZEUNIT" = "UNIT_ID")) |>
-      glims_join_tbl("DIMENSION", by = c("UNIT_DIMENSION" = "DIM_ID")) |>
-      select(MAT_MNEMONIC, MAT_SHORTNAME, MAT_SAMPLINGCODE, MAT_COMMENT, unit = UNIT_NAME, dimension = DIM_NAME) |>
-      collect()
-  } else if (type == "WARD") {
-    data <- con |>
-      glims_tbl("WARD") |>
-      select(WARD_MNEMONIC, WARD_NAME) |>
-      collect()
-  } else if (type == "SPECIALISM") {
-    data <- con |>
-      glims_tbl("SPECIALISM") |>
-      select(SPEC_MNEMONIC, SPEC_NAME) |>
-      collect()
-  } else if (type == "MICROORGANISM") {
-    data <- con |>
-      glims_tbl("MICROORGANISM") |>
-      select(MORG_MNEMONIC, MORG_NAME, MORG_SHORTNAME) |>
-      collect()
-  } else if (type == "HCPROVIDER") {
-    data <- con |>
-      glims_tbl("HCPROVIDER") |>
-      select(HCPR_MNEMONIC, HCPR_FIRSTNAME, HCPR_LASTNAME, HCPR_TITLE, HCPR_SEX, age_group = HCPR_BIRTHDATE) |>
-      collect() |>
-      mutate(HCPR_SEX = ifelse(HCPR_SEX == 1, "M", ifelse(HCPR_SEX == 2, "V", "?")),
-             age_group  = ifelse(is.na(as.Date(age_group)),
-                                 NA_real_,
-                                 floor(as.numeric(Sys.Date() - as.Date(age_group)) / 365.25)),
-             age_group  = ifelse(is.na(age_group),
-                                 NA_real_,
-                                 floor(age_group / 10) * 10),
-             age_group  = ifelse(is.na(age_group),
-                                 NA_character_,
-                                 sprintf("%d-%d", age_group, age_group + 9)))
-  }
-
-  suppressMessages(
-    shiny::shinyApp(
-      ui = shiny::fluidPage(
-        shiny::tags$head(
-          shiny::tags$style(shiny::HTML(sprintf("
-            body {
-              background-color: %s;
-              font-family: 'Outfit', sans-serif;
-            }
-            h2 {
-              color: %s;
-              font-family: 'Outfit', sans-serif;
-            }
-          ", get_colour("umcglichtblauw"), get_colour("umcgblauw")))),
-                shiny::tags$link(
-                  href = "https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap",
-                  rel = "stylesheet"
-                )
-        ),
-        shiny::titlePanel(paste0("Search GLIMS '", type, "' table")),
-        DT::dataTableOutput("shiny_table")
-      ),
-      server = function(input, output, session) {
-        output$shiny_table <- DT::renderDataTable({
-          DT::datatable(
-            data,
-            filter = "top",
-            rownames = FALSE,
-            options = list(pageLength = 50, autoWidth = TRUE)
-          )
-        })
-      }
-    )
-  )
-}
 
 #' @importFrom pillar tbl_sum dim_desc
 #' @noRd
@@ -981,7 +853,6 @@ resolve_db_names <- function(expr, db) {
   expr
 }
 
-#' @export
 glims_shiny_picker <- function() {
   rlang::check_installed("shiny")
   rlang::check_installed("DT")
@@ -1046,6 +917,13 @@ glims_shiny_picker <- function() {
                 max-width: 200px;
                 height: auto;
               }
+
+              .server {
+                color: lightgrey;
+                font-size: 10px;
+                margin-top: 10px;
+                margin-bottom: 0;
+              }
             ",
                                 get_colour("umcglichtblauw"),
                                 get_colour("umcgblauw"),
@@ -1090,7 +968,12 @@ glims_shiny_picker <- function() {
             shiny::div(
               class = "sidebar-footer",
               shiny::div("Ontwikkeld door:"),
-              shiny::tags$img(src = "mmbi_epi/unit_logo.jpeg")
+              shiny::tags$img(src = "mmbi_epi/unit_logo.jpeg"),
+              shiny::p(class = "server",
+                       paste0("GLIMS-server: ",
+                              Sys.getenv("MMBI_EPIDS_HOST"), ":",
+                              Sys.getenv("MMBI_EPIDS_PORT"),
+                              " [SVC ", Sys.getenv("MMBI_EPIDS_SVC"), "]"))
             )
           ),
 
