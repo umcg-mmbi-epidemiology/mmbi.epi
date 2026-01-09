@@ -980,3 +980,265 @@ resolve_db_names <- function(expr, db) {
   }
   expr
 }
+
+#' @export
+glims_shiny_picker <- function() {
+  rlang::check_installed("shiny")
+  rlang::check_installed("DT")
+  rlang::check_installed("dplyr")
+
+  shiny::addResourcePath(
+    prefix = "mmbi_epi",
+    directoryPath = system.file("", package = "mmbi.epi")
+  )
+
+  suppressMessages(
+    shiny::shinyApp(
+      ui = shiny::fluidPage(
+        shiny::tags$head(
+          shiny::tags$link(
+            href = "https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap",
+            rel  = "stylesheet"
+          ),
+          shiny::tags$style(
+            shiny::HTML(sprintf("
+              body {
+                background-color: %s;
+                font-family: 'Outfit', sans-serif;
+              }
+
+              h2, h3 {
+                color: %s;
+                font-weight: 700;
+              }
+
+              h3 {
+                margin-top: 0;
+                font-weight: normal;
+              }
+
+              .well {
+                background-color: white;
+                border-radius: 8px;
+                border: 1px solid %s;
+              }
+
+              .shiny-input-container label {
+                color: %s;
+              }
+
+              table.dataTable thead th {
+                background-color: %s;
+                color: white;
+              }
+
+              .sidebar-footer {
+                margin-top: 30px;
+                padding-top: 10px;
+                border-top: 1px solid %s;
+                text-align: center;
+                font-size: 0.9em;
+                color: %s;
+              }
+
+              .sidebar-footer img {
+                margin-top: 8px;
+                max-width: 200px;
+                height: auto;
+              }
+            ",
+                                get_colour("umcglichtblauw"),
+                                get_colour("umcgblauw"),
+                                get_colour("umcgblauw"),
+                                get_colour("umcgblauw"),
+                                get_colour("umcgblauw"),
+                                get_colour("umcgblauw"),
+                                get_colour("umcgblauw")
+            ))
+          )
+        ),
+
+        shiny::titlePanel("ShinyGLIMS"),
+        shiny::h3("Referentietabellen van GLIMS"),
+
+        shiny::sidebarLayout(
+          shiny::sidebarPanel(
+            width = 3,
+            shiny::p("Selecteer een GLIMS-tabel om een code of beschrijving te zoeken."),
+            shiny::br(),
+            shiny::radioButtons(
+              inputId = "type",
+              label   = "GLIMS-tabel:",
+              choices = c(
+                "Afdelingen"           = "WARD",
+                "Bepalingen"           = "PROPERTY",
+                "Materiaaltypes"       = "MATERIAL",
+                "Micro-organismen"     = "MICROORGANISM",
+                "Specialismen"         = "SPECIALISM",
+                "Zorgverleners"        = "HCPROVIDER"
+              )
+            ),
+
+            shiny::hr(),
+
+            shiny::checkboxInput(
+              inputId = "glims_colnames",
+              label   = "Gebruik interne GLIMS-kolomnamen",
+              value   = FALSE
+            ),
+
+            shiny::div(
+              class = "sidebar-footer",
+              shiny::div("Ontwikkeld door:"),
+              shiny::tags$img(src = "mmbi_epi/unit_logo.jpeg")
+            )
+          ),
+
+          shiny::mainPanel(
+            width = 9,
+            DT::dataTableOutput("shiny_table")
+          )
+        )
+      ),
+
+      server = function(input, output, session) {
+
+        data_reactive <- shiny::reactive({
+          req(input$type)
+          con <- connect_db(db = "Oracle")
+          on.exit(disconnect_db(con))
+          type <- input$type
+          if (type == "PROPERTY") {
+            con |>
+              glims_tbl("PROPERTY") |>
+              glims_join_tbl("CHOICELIST", by = c("PROP_CHOICELIST" = "CHCL_ID")) |>
+              dplyr::select(
+                PROP_ID,
+                PROP_MNEMONIC,
+                PROP_SHORTNAME,
+                CHCL_NAME,
+                CHCL_FREETEXTALLOWED
+              ) |>
+              dplyr::collect() |>
+              dplyr::mutate(CHCL_FREETEXTALLOWED = ifelse(as.logical(CHCL_FREETEXTALLOWED), "Ja", "Nee"))
+
+          } else if (type == "MATERIAL") {
+            con |>
+              glims_tbl("MATERIAL") |>
+              glims_join_tbl("UNIT", by = c("MAT_SIZEUNIT" = "UNIT_ID")) |>
+              glims_join_tbl("DIMENSION", by = c("UNIT_DIMENSION" = "DIM_ID")) |>
+              dplyr::select(
+                MAT_MNEMONIC,
+                MAT_SHORTNAME,
+                MAT_SAMPLINGCODE,
+                MAT_COMMENT,
+                unit      = UNIT_NAME,
+                dimension = DIM_NAME
+              ) |>
+              dplyr::collect()
+
+          } else if (type == "WARD") {
+            con |>
+              glims_tbl("WARD") |>
+              dplyr::select(WARD_MNEMONIC, WARD_NAME) |>
+              dplyr::collect()
+
+          } else if (type == "SPECIALISM") {
+            con |>
+              glims_tbl("SPECIALISM") |>
+              dplyr::select(SPEC_MNEMONIC, SPEC_NAME) |>
+              dplyr::collect()
+
+          } else if (type == "MICROORGANISM") {
+            con |>
+              glims_tbl("MICROORGANISM") |>
+              dplyr::select(MORG_MNEMONIC, MORG_NAME, MORG_SHORTNAME) |>
+              dplyr::collect()
+
+          } else if (type == "HCPROVIDER") {
+            con |>
+              glims_tbl("HCPROVIDER") |>
+              dplyr::select(
+                HCPR_MNEMONIC,
+                HCPR_FIRSTNAME,
+                HCPR_LASTNAME,
+                HCPR_TITLE,
+                HCPR_SEX
+              ) |>
+              dplyr::collect() |>
+              dplyr::mutate(
+                HCPR_SEX = ifelse(HCPR_SEX == 1, "M",
+                                  ifelse(HCPR_SEX == 2, "V", "?"))
+              )
+          }
+        })
+
+        output$shiny_table <- DT::renderDataTable({
+
+          data <- data_reactive()
+
+          if (isFALSE(input$glims_colnames)) {
+            data <- translate_glims_columns(data)
+          }
+
+          DT::datatable(
+            data,
+            filter   = "top",
+            rownames = FALSE,
+            options  = list(
+              pageLength  = 15,
+              autoWidth   = TRUE,
+              deferRender = TRUE,
+              order       = list(list(0, "asc")),
+              language    = list(
+                url = "//cdn.datatables.net/plug-ins/1.13.6/i18n/nl-NL.json"
+              )
+            )
+          )
+        })
+      }
+    )
+  )
+}
+
+translate_glims_columns <- function(x) {
+  translation <- c(
+    PROP_ID           = "Code/mnemonic",
+    PROP_MNEMONIC     = "Bepalingscode",
+    PROP_SHORTNAME    = "Bepalingsnaam",
+    CHCL_NAME         = "Uitvoertype",
+    CHCL_FREETEXTALLOWED = "Vrije tekst toegestaan",
+
+    MAT_MNEMONIC      = "Code/mnemonic",
+    MAT_SHORTNAME     = "Materiaalnaam",
+    MAT_SAMPLINGCODE  = "Afnamecode",
+    MAT_COMMENT       = "Opmerking",
+    unit              = "Eenheid",
+    dimension         = "Dimensie",
+
+    WARD_MNEMONIC     = "Code/mnemonic",
+    WARD_NAME         = "Afdelingsnaam",
+
+    SPEC_MNEMONIC     = "Code/mnemonic",
+    SPEC_NAME         = "Specialismenaam",
+
+    HCPR_MNEMONIC     = "Code/mnemonic",
+    HCPR_FIRSTNAME    = "Voornaam",
+    HCPR_LASTNAME     = "Achternaam",
+    HCPR_TITLE        = "Functie",
+    HCPR_SEX          = "Geslacht",
+
+    MORG_MNEMONIC     = "Code/mnemonic",
+    MORG_NAME         = "Naam",
+    MORG_SHORTNAME    = "Korte naam"
+  )
+
+  names(x) <- ifelse(
+    names(x) %in% names(translation),
+    translation[names(x)],
+    names(x)
+  )
+
+  x
+}
+
