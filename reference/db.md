@@ -64,18 +64,6 @@ retrieve(
 )
 
 retrieve_query(x)
-
-search_for_test(db = "Oracle")
-
-search_for_specimen(db = "Oracle")
-
-search_for_ward(db = "Oracle")
-
-search_for_specialism(db = "Oracle")
-
-search_for_physician(db = "Oracle")
-
-search_for_microorganism(db = "Oracle")
 ```
 
 ## Format
@@ -338,9 +326,9 @@ Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
 #> [1] "2026-01-09"
 
 Sys.time()
-#> [1] "2026-01-09 20:40:26 UTC"
+#> [1] "2026-01-09 22:04:32 UTC"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2026-01-09 21:40:26 CET"
+#> [1] "2026-01-09 23:04:32 CET"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
-#> [1] "2026-01-09 20:40:26 UTC"
+#> [1] "2026-01-09 22:04:32 UTC"
 ```
