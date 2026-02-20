@@ -2,19 +2,6 @@
 
 ## All functions
 
-- [`connect_db()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  [`disconnect_db()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  [`glims_tbl()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  [`get_glims_data()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  [`db`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  [`glims_join_tbl()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  [`oracle_julian_to_datetime()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  [`datetime_to_oracle_julian()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  [`build_query()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  [`preview()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  [`retrieve()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  [`retrieve_query()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/db.md)
-  : GLIMS Database Access
 - [`geo_gemeenten`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
   [`geo_ggdregios`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
   [`geo_nuts3`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
@@ -26,6 +13,21 @@
   [`postcodes`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
   [`postcodes4_afstanden`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
   : GIS Data Sets
+- [`connect_db()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`disconnect_db()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`glims_tbl()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`get_glims_data()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`db`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`glims_join_tbl()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`oracle_julian_to_datetime()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`datetime_to_oracle_julian()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`build_query()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`preview()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`retrieve()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`retrieve_query()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`convert_glims_ordernumber()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  [`person_id_from_ordernumber()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
+  : GLIMS Database Access
 - [`get_ms365_group()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
   [`get_planner()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
   [`get_drive()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
