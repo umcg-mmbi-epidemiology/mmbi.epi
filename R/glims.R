@@ -32,11 +32,27 @@
 #' - **`MMBI_EPIDS_PASS`** - Oracle database password
 #'
 #' The environment variables are read at runtime using `Sys.getenv()` and passed to [DBI::dbConnect()]. This approach ensures credentials are never exposed in the source code or logs.
+#' @section Picking Columns with `db$`:
+#' Preferably use the `db` object (a [list]) to pick database columns for filtering. It contains all GLIMS column names. For example:
+#'
+#' ```r
+#' get_glims_data(db$specimen_name == "Sputum")   # writing `db$` will bring up all columns
+#'
+#' get_glims_data(db$ORDER_.ORD_ID == 461098)
+#' get_glims_data(ORD_ID == 461098)               # Also works
+#' ```
+#'
+#' To use precalculated values, such as using [convert_glims_ordernumber()] to convert order numbers from the GLIMS UI, use `!!` (called 'bang-bang'):
+#'
+#' ```r
+#' get_glims_data(db$order_number == !!convert_glims_ordernumber(25461123456))
+#' ```
 #' @return
 #' Returns a live `DBIConnection` object that can be used with `DBI`, `dplyr`, or `dbplyr` for querying and manipulating data.
 #' @seealso [DBI::dbConnect()], [odbc::odbc()]
 #' @importFrom odbc dbConnect odbc
-#' @rdname db
+#' @rdname glims
+#' @name glims
 #' @export
 #' @examples
 #' \dontrun{
@@ -77,7 +93,7 @@
 #' # join to other columns server-side
 #' conn |>
 #'   glims_tbl("ANTIBIOTICRESULT") |>
-#'   glims_join_tbl("ANOTHERTABLE", by = "some_column") |>
+#'   glims_join_tbl("ANOTHER_TABLE", by = "SOME_COLUMN") |>
 #'   show_query()
 #'
 #'
@@ -123,7 +139,7 @@ connect_db <- function(db = "Oracle") {
   conn
 }
 
-#' @rdname db
+#' @rdname glims
 #' @importFrom odbc dbDisconnect dbGetInfo
 #' @export
 disconnect_db <- function(con) {
@@ -138,7 +154,7 @@ disconnect_db <- function(con) {
 #' @param con Connection object.
 #' @param table_name Name of the table to query.
 #' @param schema Database schema; the upper structure name of `table_name`.
-#' @rdname db
+#' @rdname glims
 #' @importFrom dplyr tbl
 #' @export
 glims_tbl <- function(con, table_name, schema = "ORAGLIMS") {
@@ -151,10 +167,10 @@ glims_tbl <- function(con, table_name, schema = "ORAGLIMS") {
 #' @importFrom dplyr filter between show_query left_join starts_with
 #' @importFrom dbplyr sql_build
 #' @importFrom tidyr pivot_wider
-#' @rdname db
+#' @rdname glims
 #' @export
-get_glims_data <- function(date_range = NULL,
-                           ...,
+get_glims_data <- function(...,
+                           date_range = NULL,
                            additional_columns = character(0),
                            convert_julian = TRUE,
                            convert_logicals = TRUE,
@@ -185,32 +201,35 @@ get_glims_data <- function(date_range = NULL,
                 additional_columns = additional_columns,
                 only_include_labs = only_include_labs)
 
-    if (!is.null(date_range)) {
-      # format date range
-      if (length(date_range) == 1) {
-        date_range <- rep(date_range, 2)
-      } else if (length(date_range) > 2) {
-        date_range <- c(min(date_range, na.rm = TRUE), max(date_range, na.rm = TRUE))
-      }
-      if (date_range[1] %in% 2010:2050) {
-        date_range[1] <- as.character(as.Date(paste0(date_range[1], "-01-01")))
-      }
-      if (date_range[2] %in% 2010:2050) {
-        date_range[2] <- as.character(as.Date(paste0(date_range[2], "-12-31")))
-      }
-      date_range.bak <- date_range
-      date_range <- datetime_to_oracle_julian(as.Date(date_range))
-      date_range[2] <- date_range[2] + 1 - 1e-10 # include full end date
-      qry <- qry |>
-        filter(ORD_RECEIPTTIME |>
-                 between(!!(date_range[1]),
-                         !!(date_range[2])))
+  if (isFALSE(date_range)) {
+    date_range <- NULL
+  }
+  if (!is.null(date_range)) {
+    # format date range
+    if (length(date_range) == 1) {
+      date_range <- rep(date_range, 2)
+    } else if (length(date_range) > 2) {
+      date_range <- c(min(date_range, na.rm = TRUE), max(date_range, na.rm = TRUE))
     }
+    if (date_range[1] %in% 2010:2050) {
+      date_range[1] <- as.character(as.Date(paste0(date_range[1], "-01-01")))
+    }
+    if (date_range[2] %in% 2010:2050) {
+      date_range[2] <- as.character(as.Date(paste0(date_range[2], "-12-31")))
+    }
+    date_range.bak <- date_range
+    date_range <- datetime_to_oracle_julian(as.Date(date_range))
+    date_range[2] <- date_range[2] + 1 - 1e-10 # include full end date
+    qry <- qry |>
+      filter(ORD_RECEIPTTIME |>
+               between(!!(date_range[1]),
+                       !!(date_range[2])))
+  }
 
   if (review_qry == TRUE) {
     where_txt <- as.character(sql_build(qry)$where)
     cat("Collect the data using this WHERE clause?\n\n")
-    cat(paste0(where_txt, collapse = "\n"), "\n\n")
+    cat(format_sql(paste0(where_txt, collapse = "\n")), "\n\n")
     if (!is.null(date_range)) {
       cat(paste0("This corresponds to date range: ", format(date_range.bak[1]), " to ", format(date_range.bak[2])), "\n\n")
     }
@@ -288,19 +307,7 @@ get_glims_data <- function(date_range = NULL,
   out
 }
 
-#' @section Picking Columns with `db$`:
-#' Always use the `db` object (a [list]) to pick database columns for filtering. It contains all GLIMS column names. They must **always** be preceded by the injection operator [`!!`][rlang::injection-operator] (pronounced "bang-bang"). For example:
-#'
-#' ```r
-#' get_glims_data(2025, !!db$specimen_name == "Sputum")   # writing `db$` will bring up all columns
-#'
-#' get_glims_data(2025, ORD_ID == 461098)                 # Does not work
-#' get_glims_data(2025, !!str2lang("ORD_ID") == 461098)   # Works
-#' get_glims_data(2025, !!db$ORDER_.ORD_ID == 461098)     # Works and easier to write
-#'
-#' con |> build_query(!!db$specimen_name == "Sputum") |> retrieve()
-#' ```
-#' @rdname db
+#' @rdname glims
 #' @export
 db <- readRDS(system.file("db.rds", package = "mmbi.epi"))
 
@@ -308,14 +315,14 @@ db <- readRDS(system.file("db.rds", package = "mmbi.epi"))
 #' @param qry A `tbl_dbi` object representing the database query.
 #' @param by Column name(s) to join by. Can be a named vector to allow different names:\cr  `by = c("col_A" = "col_B")`.
 #' @param ...
-#'   * [glims_join_tbl()]: Arguments passed on the join functions.
-#'   * Otherwise: Arguments passed on the `WHERE` clause in the query. Supports `dplyr` language.
+#' * `glims_join_tbl()`: Arguments passed on the join functions.
+#' * Otherwise: Arguments passed on the `WHERE` clause in the query. Supports `dplyr` language.
 #' @param type Direction of the join, defaults to `"left"`.
 #' * [`"inner"`][dplyr::inner_join()]: returns matched x rows.
 #' * [`"left"`][dplyr::left_join()]: returns all x rows.
 #' * [`"right"`][dplyr::right_join()]: returns matched of x rows, followed by unmatched y rows.
 #' * [`"full"`][dplyr::full_join()]: returns all x rows, followed by unmatched y rows.
-#' @rdname db
+#' @rdname glims
 #' @importFrom dbplyr remote_con
 #' @importFrom dplyr left_join right_join full_join inner_join
 #' @export
@@ -344,7 +351,7 @@ glims_join_tbl <- function(qry,
   out
 }
 
-#' @rdname db
+#' @rdname glims
 #' @param x Numeric vector or data.frame, to convert Oracle Julian days to common dates. In case of data frames, only columns with numeric values that have Julian days between 1900-01-01 and 2100-01-01 will be converted.
 #' @param tz Target time zone.
 #' @export
@@ -378,7 +385,7 @@ oracle_julian_to_datetime <- function(x, tz = "Europe/Amsterdam") {
   out
 }
 
-#' @rdname db
+#' @rdname glims
 #' @export
 datetime_to_oracle_julian <- function(x) {
   if (inherits(x, "Date")) {
@@ -406,7 +413,7 @@ datetime_to_oracle_julian <- function(x) {
 #'
 #' These types can be combined.
 #' @importFrom dplyr select filter everything any_of
-#' @rdname db
+#' @rdname glims
 #' @export
 build_query <- function(con, ..., qry_type = "results", additional_columns = character(0), only_include_labs = "Medische Microbiologie") {
   with_cli_status(
@@ -531,11 +538,11 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
         filters <- lapply(filters, function(q) {
           expr <- rlang::get_expr(q)
           expr_resolved <- resolve_db_names(expr, db = db)
-          rlang::new_quosure(expr_resolved, rlang::get_env(q))
+          expr_casted <- auto_cast_filter(expr_resolved, con = con, qry = full_qry)
+          rlang::new_quosure(expr_casted, rlang::get_env(q))
         })
         full_qry <- full_qry |> filter(!!!filters)
       }
-
 
       # SELECT ----
       order_cols <- c("ORD_ID" = ifelse("results" %in% qry_type, "RSLT_ORDER", "RQST_ORDER"),
@@ -634,7 +641,7 @@ build_query <- function(con, ..., qry_type = "results", additional_columns = cha
 }
 
 #' @param n Number of rows to collect.
-#' @rdname db
+#' @rdname glims
 #' @importFrom dplyr collect
 #' @export
 preview <- function(qry, n = 100) {
@@ -652,7 +659,7 @@ preview <- function(qry, n = 100) {
 #' @importFrom dplyr collect mutate case_when select everything
 #' @importFrom dbplyr remote_query remote_con
 #' @importFrom odbc dbGetInfo
-#' @rdname db
+#' @rdname glims
 #' @export
 retrieve <- function(qry,
                      limit = Inf,
@@ -735,7 +742,7 @@ retrieve <- function(qry,
 }
 
 #' @importFrom dbplyr remote_query
-#' @rdname db
+#' @rdname glims
 #' @export
 retrieve_query <- function(x) {
   if (!is.null(attr(x, "qry", exact = TRUE))) {
@@ -745,9 +752,121 @@ retrieve_query <- function(x) {
   } else {
     stop("No query found in object.", call. = FALSE)
   }
-  cat(qry)
+  cat(format_sql(qry))
   cat("\n")
   invisible(qry)
+}
+
+format_sql <- function(qry) {
+  gsub("( AND | OR |NOT| IN |EVAL| BETWEEN | ON | IS | AS )", cli::col_blue("\\1"),
+       gsub("(SELECT|FROM|WHERE|LIMIT|LEFT JOIN|RIGHT JOIN|INNER JOIN)", cli::style_bold(cli::col_blue("\\1")),
+            gsub("}\n  (AND|OR) ", "} \\1 ",
+                 gsub(" (AND|OR) ", "\n  \\1 ",
+                      gsub(" (AND|OR)\n", cli::col_blue(" \\1\n"),
+                           gsub(" NULL", paste0(" ", cli::col_green("NULL")),
+                                gsub(" IS ", paste0(" ", cli::col_green("IS"), " "),
+                                     gsub('"(.*?)"', cli::col_yellow("\"\\1\""),
+                                          gsub("'(.*?)'", cli::col_magenta("'\\1'"), qry)))))))))
+}
+
+#' @param glims_order_number A GLIMS order number. The `convert_glims_ordernumber()` function will append this with "961" and keeps a total of 12 numbers.
+#' @rdname glims
+#' @export
+convert_glims_ordernumber <- function(glims_order_number) {
+  paste0("961", substr(glims_order_number, 1, 9))
+}
+
+#' @param convert A logical to use `convert_glims_ordernumber()` before using `person_id_from_ordernumber()`
+#' @importFrom dplyr filter collect pull
+#' @rdname glims
+#' @export
+person_id_from_ordernumber <- function(glims_order_number, convert = TRUE, db = "Oracle") {
+  if (convert == TRUE) {
+    glims_order_number <- convert_glims_ordernumber(glims_order_number)
+  }
+  glims_order_number <- as.character(glims_order_number)
+  con <- connect_db(db = db)
+  on.exit(disconnect_db(con))
+  out <- con |>
+    glims_tbl("ORDER_") |>
+    glims_join_tbl("ENCOUNTER", by = c("ORD_ENCOUNTER" = "ENCT_ID")) |>
+    filter(`U##ORD_INTERNALID` == glims_order_number) |>
+    utils::head(1) |>
+    collect() |>
+    pull("ENCT_PERSON")
+  if (length(out) > 0) {
+    c(PRSN_ID = out)
+  } else {
+    NA_character_
+  }
+}
+
+auto_cast_filter <- function(expr, con, qry) {
+  if (!rlang::is_call(expr)) {
+    return(expr)
+  }
+  # Only handle binary comparisons
+  if (rlang::call_name(expr) %in% c("==", "!=", ">", "<", ">=", "<=")) {
+    lhs <- expr[[2]]
+    rhs <- expr[[3]]
+    if (rlang::is_symbol(lhs) && !rlang::is_symbol(rhs)) {
+      colname <- rlang::as_string(lhs)
+      res <- DBI::dbSendQuery(con, paste0("SELECT ", colname, " FROM (", dbplyr::remote_query(qry), ") WHERE 1=0"))
+      colinfo <- DBI::dbColumnInfo(res)
+      DBI::dbClearResult(res)
+      if (nrow(colinfo) == 1) {
+        expr[[3]] <- alter_from_odbc_type(rhs, colinfo$type, colname)
+      }
+    }
+  }
+  expr[] <- lapply(expr, auto_cast_filter, con = con, qry = qry)
+  expr
+}
+
+odbc_type_to_string <- function(type_code) {
+  lookup <- c(
+    `1`   = "CHAR",
+    `12`  = "VARCHAR",
+    `-9`  = "NVARCHAR",
+    `-1`  = "LONGVARCHAR",
+    `4`   = "INTEGER",
+    `5`   = "SMALLINT",
+    `-5`  = "BIGINT",
+    `6`   = "FLOAT",
+    `8`   = "DOUBLE",
+    `2`   = "NUMERIC",
+    `3`   = "DECIMAL",
+    `91`  = "DATE",
+    `93`  = "TIMESTAMP"
+  )
+  out <- unname(lookup[as.character(type_code)] %||% paste0("UNKNOWN(", type_code, ")"))
+  out[is.na(out)] <- type_code[is.na(out)]
+  out
+}
+
+alter_from_odbc_type <- function(val, type_code, col) {
+  type_name <- odbc_type_to_string(type_code)
+  warn <- function(val, type) {
+    cli::cli_alert_warning("Value in RHS {.val {val}} converted from {.var {paste(class(val), collapse = \"/\")}} to {.var character} to comply with column {.val {col}}")
+  }
+  if (!is.character(val) &&type_name %in% c("CHAR", "VARCHAR", "NVARCHAR", "LONGVARCHAR")) {
+    warn(val, "character")
+    as.character(val)
+  } else if (!is.integer(val) && type_name %in% c("INTEGER", "SMALLINT", "BIGINT")) {
+    warn(val, "integer")
+    as.integer(val)
+  } else if (!is.double(val) && type_name %in% c("DOUBLE", "FLOAT", "NUMERIC", "DECIMAL")) {
+    warn(val, "numeric")
+    as.double(val)
+  } else if (!inherits(val, "Date") && type_name == "DATE") {
+    warn(val, "Date")
+    as.Date(val)
+  } else if (!inherits(val, "POSIXct") && type_name == "TIMESTAMP") {
+    warn(val, "POSIXct")
+    as.POSIXct(val)
+  } else {
+    val
+  }
 }
 
 # OTHER FUNCTIONS ---------------------------------------------------------------------------------

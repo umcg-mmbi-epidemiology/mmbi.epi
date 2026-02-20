@@ -13,7 +13,7 @@ MDM_DESCRIPTION,          carrier_medium
 MORG_MNEMONIC,            microorganism_mnemonic
 MORG_NAME,                microorganism_name
 ORD_ID,                   order_id
-ORD_INTERNALID,           order_id_internal
+U##ORD_INTERNALID,        order_number
 ORD_RECEIPTTIME,          order_received
 PROP_DATATYPE,            test_datatype
 PROP_MNEMONIC,            test_mnemonic

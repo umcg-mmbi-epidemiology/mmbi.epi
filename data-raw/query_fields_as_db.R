@@ -1,7 +1,10 @@
 
 # Create a list for this package with all fields that can be queried
 
-library(dplyr)
+# UPDATE WITH:
+# source("data-raw/query_fields_as_db.R")
+
+library(dplyr, warn.conflicts = FALSE)
 
 readable_col_names <- read.csv(system.file("readable_column_names.csv", package = "mmbi.epi"), strip.white = TRUE)
 full_table_overview <- read.delim("data-raw/full_table_overview.txt") |>
@@ -51,10 +54,10 @@ full_table_overview <- full_table_overview |>
   ) |>
   arrange(TABLE_NAME, COLUMN_ID)
 
-part1 <- lapply(full_table_overview$COLUMN_NAME, str2lang)
+part1 <- lapply(full_table_overview$COLUMN_NAME, as.name)
 names(part1) <- full_table_overview$nm
 
-part2 <- lapply(full_table_overview$COLUMN_NAME[!is.na(full_table_overview$NEW_COLUMN_NAME)], str2lang)
+part2 <- lapply(full_table_overview$COLUMN_NAME[!is.na(full_table_overview$NEW_COLUMN_NAME)], as.name)
 names(part2) <- full_table_overview$NEW_COLUMN_NAME[!is.na(full_table_overview$NEW_COLUMN_NAME)]
 
 db <- c(part2, part1)
