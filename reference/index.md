@@ -2,6 +2,8 @@
 
 ## All functions
 
+- [`amrznn_upload()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/amrznn_upload.md)
+  : Upload a File to the AMRZNN Dashboard Data Repository
 - [`geo_gemeenten`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
   [`geo_ggdregios`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)
   [`geo_nuts3`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/gis-datasets.md)

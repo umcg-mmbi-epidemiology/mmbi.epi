@@ -333,17 +333,17 @@ disconnect_db(conn)
 # Other ----------------------------------------------------------------
 
 datetime_to_oracle_julian(Sys.Date())
-#> [1] 2461092
+#> [1] 2461113
 
 Sys.Date()
-#> [1] "2026-02-20"
+#> [1] "2026-03-13"
 Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2026-02-20"
+#> [1] "2026-03-13"
 
 Sys.time()
-#> [1] "2026-02-20 15:40:17 UTC"
+#> [1] "2026-03-13 12:13:18 UTC"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2026-02-20 16:40:17 CET"
+#> [1] "2026-03-13 13:13:18 CET"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
-#> [1] "2026-02-20 15:40:17 UTC"
+#> [1] "2026-03-13 12:13:18 UTC"
 ```
