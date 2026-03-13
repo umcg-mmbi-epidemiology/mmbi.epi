@@ -1106,7 +1106,7 @@ glims_shiny_picker <- function() {
       server = function(input, output, session) {
 
         data_reactive <- shiny::reactive({
-          req(input$type)
+          shiny::req(input$type)
           con <- connect_db(db = "Oracle")
           on.exit(disconnect_db(con))
           type <- input$type
