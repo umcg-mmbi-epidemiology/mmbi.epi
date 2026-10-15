@@ -16,6 +16,8 @@
 #  useful, but it comes WITHOUT ANY WARRANTY OR LIABILITY.              #
 # ===================================================================== #
 
+pkg_env <- new.env(hash = FALSE)
+
 #' Microsoft 365 Group and SharePoint Utilities
 #'
 #' @description
@@ -82,19 +84,36 @@
 #' planner <- get_planner()
 #' planner$list_tasks()
 #' }
-get_ms365_group <- function(group_name = "MMBI Unit Epidemiologie & Data Science") {
+setup_ms365 <- function() {
   login <- tryCatch(
     suppressMessages(get_graph_login("umcgonline", selection = 1, refresh = TRUE)),
     error = function(e) NULL
   )
-  if (is.null(login)) {
-    if (interactive()) {
-      login <- create_graph_login(tenant = "umcgonline", auth_type = "device_code")
-    } else {
-      stop("Authentication token could not be renewed. Run `mmbi.epi::get_ms365_group()` interactively.", call. = FALSE)
-    }
+  if (!is.null(login)) {
+    pkg_env$ms365 <- login
+    return(invisible(login))
   }
-  login$get_group(name = group_name)
+
+  if (is.null(login) && interactive()) {
+    login <- tryCatch(
+      create_graph_login(tenant = "umcgonline", auth_type = "device_code"),
+      error = function(e) NULL)
+  }
+  if (is.null(login)) {
+    stop("Authentication token could not be renewed. Run `mmbi.epi::get_ms365_group()` interactively.", call. = FALSE)
+  }
+
+  message("Succesful.")
+  pkg_env$ms365 <- login
+}
+
+#' @rdname ms365
+#' @export
+get_ms365_group <- function(group_name = "MMBI Unit Epidemiologie & Data Science") {
+  if (is.null(pkg_env$ms365)) {
+    setup_ms365()
+  }
+  pkg_env$ms365$get_group(name = group_name)
 }
 
 #' @rdname ms365
