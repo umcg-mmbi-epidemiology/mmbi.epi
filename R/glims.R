@@ -205,7 +205,7 @@ disconnect_db <- function(con) {
 #' @rdname glims
 #' @importFrom dplyr tbl
 #' @export
-glims_tbl <- function(con, table_name, schema = "ORAGLIMS") {
+glims_tbl <- function(con, table_name, schema = "PUB") {
   con |> tbl(I(paste0(schema, ".", table_name)))
 }
 
@@ -379,10 +379,16 @@ glims_join_tbl <- function(qry,
                            by = NULL,
                            ...,
                            type = "left",
-                           schema = "ORAGLIMS") {
+                           schema = "PUB") {
   con <- remote_con(qry)
 
   table_y <- con |> glims_tbl(table_name, schema)
+
+  # On OpenEdge, use the column spellings as they exist in both tables, so
+  # `by` can be written in any case, e.g. c("RQST_ORDER" = "ORD_ID").
+  if (inherits(qry, "tbl_lazy") && is_openedge_con(con)) {
+    by <- oe_match_by(by, colnames(qry), colnames(table_y))
+  }
 
   if (type == "left") {
     out <- qry |> left_join(table_y, by = by, ...)

@@ -32,8 +32,6 @@ Imports:
   plot2,
   tidyr,
   DBI,
-  rJava,
-  RJDBC,
   utils
 Suggests:
   AMR,

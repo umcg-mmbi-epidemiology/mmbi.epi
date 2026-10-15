@@ -26,7 +26,7 @@ connect_db(db = "Oracle")
 
 disconnect_db(con)
 
-glims_tbl(con, table_name, schema = "ORAGLIMS")
+glims_tbl(con, table_name, schema = "PUB")
 
 get_glims_data(
   ...,
@@ -45,14 +45,7 @@ get_glims_data(
 
 db
 
-glims_join_tbl(
-  qry,
-  table_name,
-  by = NULL,
-  ...,
-  type = "left",
-  schema = "ORAGLIMS"
-)
+glims_join_tbl(qry, table_name, by = NULL, ..., type = "left", schema = "PUB")
 
 oracle_julian_to_datetime(x, tz = "Europe/Amsterdam")
 

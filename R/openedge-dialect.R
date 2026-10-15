@@ -13,6 +13,7 @@ dialect_openedge <- function() {
 dbplyr_internal <- function(name) utils::getFromNamespace(name, "dbplyr")
 
 #' @exportS3Method dbplyr::sql_query_select
+#' @noRd
 sql_query_select.sql_dialect_openedge <- function(con, select, from, where = NULL,
                                                   group_by = NULL, having = NULL,
                                                   window = NULL, order_by = NULL,
