@@ -30,7 +30,8 @@
   [`convert_glims_ordernumber()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
   [`person_id_from_ordernumber()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/glims.md)
   : GLIMS Database Access
-- [`get_ms365_group()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+- [`setup_ms365()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
+  [`get_ms365_group()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
   [`get_planner()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
   [`get_drive()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)
   [`get_sharepoint_site()`](https://umcg-mmbi-epidemiology.github.io/mmbi.epi/reference/ms365.md)

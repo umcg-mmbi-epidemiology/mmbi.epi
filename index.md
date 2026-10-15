@@ -7,6 +7,7 @@ Data Science.
 Upon loading, official UMCG colours are available too:
 
 ``` r
+
 library(mmbi.epi)
 
 get_colour("umcgdonkerblauw")
@@ -25,6 +26,7 @@ Should work for any GLIMS v9.\* and v10.\*, if an ODBC connection is
 available.
 
 ``` r
+
 library(mmbi.epi)
 
 conn <- connect_db()
