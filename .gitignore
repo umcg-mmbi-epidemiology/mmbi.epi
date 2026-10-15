@@ -45,3 +45,8 @@ Thumbs.db
 .Renviron
 .Rproj.user
 inst/doc
+
+/.quarto/
+
+# JDBC files
+*.jar
