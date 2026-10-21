@@ -74,7 +74,6 @@ geo_provincies |>
   plot2(title = "Inwoners in Nederlandse provincies")
 #> ℹ Assuming datalabels.centroid = TRUE. Set to FALSE for a point-on-surface
 #> placing of datalabels.
-#> ℹ Downloaded font https://fonts.google.com/specimen/Outfit from Google Fonts
 #> ℹ Using category = inwoners
 #> ℹ Using datalabels = provincie
 

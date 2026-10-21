@@ -12,7 +12,7 @@ connect_db(db = "Oracle")
 
 disconnect_db(con)
 
-glims_tbl(con, table_name, schema = "ORAGLIMS")
+glims_tbl(con, table_name, schema = "PUB")
 
 get_glims_data(
   ...,
@@ -31,14 +31,7 @@ get_glims_data(
 
 db
 
-glims_join_tbl(
-  qry,
-  table_name,
-  by = NULL,
-  ...,
-  type = "left",
-  schema = "ORAGLIMS"
-)
+glims_join_tbl(qry, table_name, by = NULL, ..., type = "left", schema = "PUB")
 
 oracle_julian_to_datetime(x, tz = "Europe/Amsterdam")
 
@@ -333,17 +326,17 @@ disconnect_db(conn)
 # Other ----------------------------------------------------------------
 
 datetime_to_oracle_julian(Sys.Date())
-#> [1] 2461329
+#> [1] 2461335
 
 Sys.Date()
-#> [1] "2026-10-15"
+#> [1] "2026-10-21"
 Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2026-10-15"
+#> [1] "2026-10-21"
 
 Sys.time()
-#> [1] "2026-10-15 19:05:31 UTC"
+#> [1] "2026-10-21 10:44:20 UTC"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2026-10-15 21:05:31 CEST"
+#> [1] "2026-10-21 12:44:20 CEST"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
-#> [1] "2026-10-15 19:05:31 UTC"
+#> [1] "2026-10-21 10:44:20 UTC"
 ```

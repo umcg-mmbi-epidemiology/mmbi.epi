@@ -62,19 +62,116 @@
 <span></span>
 <span><span class="fu"><a href="https://msberends.github.io/plot2/reference/colour.html" class="external-link">get_colour</a></span><span class="op">(</span><span class="st">"umcg"</span>, <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "#003183"  "#FF7D00"</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="progress-openedge-jdbc">Progress OpenEdge (JDBC)<a class="anchor" aria-label="anchor" href="#progress-openedge-jdbc"></a>
+</h2>
+<p><code>connect_db("ProgressJ")</code> connects to a Progress OpenEdge database through JDBC. On Posit Workbench this is the supported route: the OpenEdge ODBC driver (<code>connect_db("Progress")</code>) needs Linux driver files that we don’t have, because the database servers run on Windows. The JDBC driver is a single, platform-independent <code>.jar</code> file.</p>
+<div class="section level3">
+<h3 id="requirements">Requirements<a class="anchor" aria-label="anchor" href="#requirements"></a>
+</h3>
+<ul>
+<li>
+<strong>Java (JDK)</strong> and the R packages <strong>rJava</strong> and <strong>RJDBC</strong>. If <code>install.packages("rJava")</code> fails on Workbench, see dev/install-rjava.R.</li>
+<li>
+<strong><code>openedge.jar</code></strong>, from <code>%DLC%\java</code> on the OpenEdge server. Ask the database administrator for a copy that matches the database version, and store it in your home directory, for example <code>~/progress/openedge.jar</code>.</li>
+<li>
+<strong>dbplyr &gt;= 2.6.0</strong>, for the OpenEdge SQL dialect (see below).</li>
+<li>Network access from Workbench to the <strong>SQL broker port</strong> of the database. This is often a different port from the ABL/4GL broker. Test it with <code>nc -zv &lt;host&gt; &lt;port&gt;</code> in the Terminal.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="configuration">Configuration<a class="anchor" aria-label="anchor" href="#configuration"></a>
+</h3>
+<p>Add the following to <code>~/.Renviron</code> and restart R:</p>
+<pre><code>JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+PROGRESS_JAR=${HOME}/progress/openedge.jar
+PROGRESS_HOST=dbserver.example.local
+PROGRESS_PORT=20931
+PROGRESS_DB=mydb
+PROGRESS_USER=sqluser
+PROGRESS_PASS=secret</code></pre>
+<p>Set <code>JAVA_HOME</code> to the JDK that was used to install rJava.</p>
+</div>
+<div class="section level3">
+<h3 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
+</h3>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">conn</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/glims.html">connect_db</a></span><span class="op">(</span><span class="st">"ProgressJ"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Plain SQL: use TOP instead of LIMIT, and quote table names</span></span>
+<span><span class="fu">DBI</span><span class="fu">::</span><span class="fu"><a href="https://dbi.r-dbi.org/reference/dbGetQuery.html" class="external-link">dbGetQuery</a></span><span class="op">(</span><span class="va">conn</span>, <span class="st">'SELECT TOP 5 * FROM &lt;schema&gt;."&lt;tablename&gt;"'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># dbplyr</span></span>
+<span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">conn</span>, <span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/in_schema.html" class="external-link">in_schema</a></span><span class="op">(</span><span class="st">"&lt;schema&gt;"</span>, <span class="st">"&lt;tablename&gt;"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>Application tables are in the <code>&lt;schema&gt;</code> schema. Always refer to tables as <code>&lt;schema&gt;."TableName"</code> (with <code><a href="https://dbplyr.tidyverse.org/reference/in_schema.html" class="external-link">dbplyr::in_schema()</a></code> in dbplyr code): table names with hyphens or reserved words fail without quotes.</p>
+</div>
+<div class="section level3">
+<h3 id="what-connect_dbprogressj-does">What <code>connect_db("ProgressJ")</code> does<a class="anchor" aria-label="anchor" href="#what-connect_dbprogressj-does"></a>
+</h3>
+<ul>
+<li>
+<strong>Read uncommitted:</strong> it sets the transaction isolation level to <code>READ UNCOMMITTED</code>, so read queries don’t lock records that application users are working on.</li>
+<li>
+<strong>OpenEdge SQL dialect:</strong> it attaches an OpenEdge dialect to the connection with <code><a href="https://dbplyr.tidyverse.org/reference/with_dialect.html" class="external-link">dbplyr::with_dialect()</a></code>. dbplyr does not recognise OpenEdge and would otherwise fall back to generic SQL with <code>LIMIT n</code>, which OpenEdge rejects. The dialect (<code>R/openedge-dialect.R</code>) builds on dbplyr’s ODBC dialect and only changes row limits to <code>SELECT TOP n</code>.</li>
+<li>
+<strong>Loading the JVM:</strong> before starting the JDBC driver, it loads <code>libjvm.so</code> from <code>JAVA_HOME</code> with <code><a href="https://rdrr.io/r/base/dynload.html" class="external-link">dyn.load()</a></code>. R’s Java configuration on Workbench still points to <code>/usr/lib/jvm/jre-11-openjdk</code>, which no longer exists, so rJava can’t find the JVM on its own. The line can be removed once an administrator has run <code>sudo R CMD javareconf</code> on the server.</li>
+</ul>
+<p>The dialect uses a few internal dbplyr functions. After updating dbplyr, run the package tests, or check that <code>show_query()</code> still shows <code>TOP</code> instead of <code>LIMIT</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="troubleshooting">Troubleshooting<a class="anchor" aria-label="anchor" href="#troubleshooting"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th>Error</th>
+<th>Cause</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>java.lang.ClassNotFoundException</code></td>
+<td>
+<code>PROGRESS_JAR</code> is empty, or the file doesn’t exist. Check with <code>file.exists(Sys.getenv("PROGRESS_JAR"))</code>.</td>
+</tr>
+<tr>
+<td><code>Table/View/Synonym not found (7519)</code></td>
+<td>Wrong schema, or an unquoted table name. Use <code>&lt;schema&gt;."TableName"</code>.</td>
+</tr>
+<tr>
+<td><code>Syntax error in SQL statement at or about " 5" (10713)</code></td>
+<td>The query uses <code>LIMIT</code>. Use <code>TOP n</code> in SQL, and check that the dialect is attached in dbplyr code.</td>
+</tr>
+<tr>
+<td><code>No ResultSet set was produced</code></td>
+<td>A statement that returns no rows (<code>SET</code>, <code>UPDATE</code>, …) was sent with <code>dbGetQuery()</code>. Use <code><a href="https://dbi.r-dbi.org/reference/dbExecute.html" class="external-link">DBI::dbExecute()</a></code> (dbplyr &gt;= 2.6.0) or <code><a href="https://rdrr.io/pkg/RJDBC/man/JDBCConnection-methods.html" class="external-link">RJDBC::dbSendUpdate()</a></code>.</td>
+</tr>
+<tr>
+<td><code>libjvm.so: cannot open shared object file</code></td>
+<td>
+<code>JAVA_HOME</code> is not set or points to a directory without <code>lib/server/libjvm.so</code>. Check <code>JAVA_HOME</code> in <code>~/.Renviron</code> and restart R.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div class="section level1">
 <h1 id="glims-read-support">GLIMS read support<a class="anchor" aria-label="anchor" href="#glims-read-support"></a>
 </h1>
 <p>Should work for any GLIMS v9.* and v10.*, if an ODBC connection is available.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://umcg-mmbi-epidemiology.github.io/mmbi.epi/">mmbi.epi</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">conn</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/glims.html">connect_db</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># download first 500 rows</span></span>
 <span><span class="va">first_500</span> <span class="op">&lt;-</span> <span class="va">conn</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="reference/glims.html">glims_tbl</a></span><span class="op">(</span><span class="st">"ANTIBIOTICRESULT"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="reference/glims.html">glims_tbl</a></span><span class="op">(</span><span class="st">"ANTIBIOTICRESULT"</span>, schema <span class="op">=</span> <span class="st">"&lt;schema&gt;"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/glims.html">retrieve</a></span><span class="op">(</span><span class="fl">500</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># joins</span></span>
