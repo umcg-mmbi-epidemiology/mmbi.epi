@@ -125,7 +125,7 @@ connect_db <- function(db = "Oracle") {
           Driver   = Sys.getenv("MMBI_EPIDS_DRIVER"),
           Host     = Sys.getenv("MMBI_EPIDS_HOST"),
           Port     = Sys.getenv("MMBI_EPIDS_PORT"),
-          SVC      = Sys.getenv("MMBI_EPIDS_SVC"),
+          SVC      = Sys.getenv("MMBI_EPIDS_DB"),
           UID      = Sys.getenv("MMBI_EPIDS_USER"),
           PWD      = Sys.getenv("MMBI_EPIDS_PASS")
         )
@@ -133,6 +133,54 @@ connect_db <- function(db = "Oracle") {
     )
     # } else if (db == "...") {
     #
+  } else if (db == "Progress") {
+    with_cli_status(
+      time = FALSE,
+      msg = paste("Connecting to", db, "database"),
+      expr = {
+        conn <- dbConnect(
+          odbc::odbc(),
+          Driver                = Sys.getenv("MMBI_EPIDS_DRIVER"), # bv. "Progress OpenEdge 12.2 Driver"
+          HostName              = Sys.getenv("MMBI_EPIDS_HOST"),
+          PortNumber            = Sys.getenv("MMBI_EPIDS_PORT"),   # poort van de SQL-broker
+          DatabaseName          = Sys.getenv("MMBI_EPIDS_DB"),
+          LogonID               = Sys.getenv("MMBI_EPIDS_USER"),
+          Password              = Sys.getenv("MMBI_EPIDS_PASS"),
+          DefaultIsolationLevel = "READ UNCOMMITTED"               # leesacties blokkeren geen records
+        )
+      }
+    )
+  } else if (db == "ProgressJ") {
+    rlang::check_installed(c("rJava", "RJDBC"))
+    with_cli_status(
+      time = FALSE,
+      msg = paste("Connecting to", db, "database"),
+      expr = {
+        if (!"libjvm" %in% names(getLoadedDLLs())) {
+          dyn.load(file.path(Sys.getenv("JAVA_HOME"), "lib/server/libjvm.so"))
+        }
+        drv <- RJDBC::JDBC(
+          driverClass = "com.ddtek.jdbc.openedge.OpenEdgeDriver",
+          classPath   = Sys.getenv("PROGRESS_JAR")
+        )
+        conn <- DBI::dbConnect(
+          drv,
+          sprintf(
+            "jdbc:datadirect:openedge://%s:%s;databaseName=%s",
+            Sys.getenv("MMBI_EPIDS_HOST"),
+            Sys.getenv("MMBI_EPIDS_PORT"),
+            Sys.getenv("MMBI_EPIDS_DB")
+          ),
+          Sys.getenv("MMBI_EPIDS_USER"),
+          Sys.getenv("MMBI_EPIDS_PASS")
+        )
+        # leesacties blokkeren geen records van gebruikers in de applicatie
+        # 1 = java.sql.Connection.TRANSACTION_READ_UNCOMMITTED
+        rJava::.jcall(conn@jc, "V", "setTransactionIsolation", 1L)
+        # RJDBC::dbSendUpdate(conn, "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED")
+        conn <- dbplyr::with_dialect(conn, dialect_openedge())
+      }
+    )
   } else {
     stop("Database currently not supported: ", db)
   }
@@ -157,7 +205,7 @@ disconnect_db <- function(con) {
 #' @rdname glims
 #' @importFrom dplyr tbl
 #' @export
-glims_tbl <- function(con, table_name, schema = "ORAGLIMS") {
+glims_tbl <- function(con, table_name, schema = "PUB") {
   con |> tbl(I(paste0(schema, ".", table_name)))
 }
 
@@ -331,10 +379,16 @@ glims_join_tbl <- function(qry,
                            by = NULL,
                            ...,
                            type = "left",
-                           schema = "ORAGLIMS") {
+                           schema = "PUB") {
   con <- remote_con(qry)
 
   table_y <- con |> glims_tbl(table_name, schema)
+
+  # On OpenEdge, use the column spellings as they exist in both tables, so
+  # `by` can be written in any case, e.g. c("RQST_ORDER" = "ORD_ID").
+  if (inherits(qry, "tbl_lazy") && is_openedge_con(con)) {
+    by <- oe_match_by(by, colnames(qry), colnames(table_y))
+  }
 
   if (type == "left") {
     out <- qry |> left_join(table_y, by = by, ...)

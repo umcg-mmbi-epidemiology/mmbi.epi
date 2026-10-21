@@ -21,7 +21,7 @@ Depends:
 Imports:
   AzureGraph,
   certegis,
-  dbplyr,
+  dbplyr (>= 2.6.0),
   dplyr,
   httr,
   jsonlite,
@@ -30,7 +30,9 @@ Imports:
   openssl,
   pillar,
   plot2,
-  tidyr
+  tidyr,
+  DBI,
+  utils
 Suggests:
   AMR,
   cli,
@@ -42,7 +44,11 @@ Suggests:
   shiny,
   sf,
   rstudioapi,
-  tidyselect
+  tidyselect,
+  rJava,
+  RJDBC,
+  RSQLite, 
+  testthat (>= 3.0.0)
 License: GPL-2 | file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
