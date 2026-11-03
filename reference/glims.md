@@ -8,7 +8,7 @@ credentials and driver paths are stored outside the source code.
 ## Usage
 
 ``` r
-connect_db(db = "Oracle")
+connect_db(db = "Progress", skip_connections_pane = FALSE, timeout = 10)
 
 disconnect_db(con)
 
@@ -63,15 +63,17 @@ convert_glims_ordernumber(glims_order_number)
 person_id_from_ordernumber(glims_order_number, convert = TRUE, db = "Oracle")
 ```
 
-## Format
-
-An object of class `list` of length 985.
-
 ## Arguments
 
 - db:
 
   Database to connect to.
+
+- skip_connections_pane:
+
+  If `TRUE`, don't register the connection with the Connections pane of
+  Positron or RStudio. Useful when the IDE takes long to explore a large
+  database after connecting.
 
 - con:
 
@@ -326,17 +328,17 @@ disconnect_db(conn)
 # Other ----------------------------------------------------------------
 
 datetime_to_oracle_julian(Sys.Date())
-#> [1] 2461335
+#> [1] 2461348
 
 Sys.Date()
-#> [1] "2026-10-21"
+#> [1] "2026-11-03"
 Sys.Date() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2026-10-21"
+#> [1] "2026-11-03"
 
 Sys.time()
-#> [1] "2026-10-21 10:44:20 UTC"
+#> [1] "2026-11-03 10:48:58 UTC"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
-#> [1] "2026-10-21 12:44:20 CEST"
+#> [1] "2026-11-03 11:48:58 CET"
 Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
-#> [1] "2026-10-21 10:44:20 UTC"
+#> [1] "2026-11-03 10:48:58 UTC"
 ```

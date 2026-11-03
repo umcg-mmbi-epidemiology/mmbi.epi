@@ -18,6 +18,8 @@ Useful links:
 
 Authors:
 
+- Matthijs S. Berends <m.s.berends@umcg.nl>
+
 - Gerolf C. de Boer
 
 Other contributors:
