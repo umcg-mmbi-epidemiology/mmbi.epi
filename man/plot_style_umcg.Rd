@@ -16,7 +16,7 @@ register_umcg_plot_style()
 unregister_umcg_plot_style()
 }
 \arguments{
-\item{...}{arguments passed on to \code{\link[ggplot2:scale_manual]{ggplot2::scale_colour_manual()}} or \code{\link[ggplot2:scale_manual]{ggplot2::scale_fill_manual()}}}
+\item{...}{arguments passed on to \code{\link[ggplot2:scale_colour_manual]{ggplot2::scale_colour_manual()}} or \code{\link[ggplot2:scale_fill_manual]{ggplot2::scale_fill_manual()}}}
 
 \item{n}{Number of colours required.}
 }

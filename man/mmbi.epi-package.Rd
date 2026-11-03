@@ -21,6 +21,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Matthijs S. Berends \email{m.s.berends@umcg.nl}
   \item Gerolf C. de Boer
 }
 

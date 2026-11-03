@@ -114,7 +114,16 @@
 #' Sys.time()
 #' Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime()
 #' Sys.time() |> datetime_to_oracle_julian() |> oracle_julian_to_datetime(tz = "UTC")
-connect_db <- function(db = "Oracle") {
+#'
+#' @param skip_connections_pane If `TRUE`, don't register the connection
+#'   with the Connections pane of Positron or RStudio. Useful when the IDE
+#'   takes long to explore a large database after connecting.
+connect_db <- function(db = "Progress", skip_connections_pane = FALSE, timeout = 10) {
+  if (skip_connections_pane) {
+    op <- options(connectionObserver = NULL)
+    on.exit(options(op), add = TRUE)
+  }
+
   if (db == "Oracle") {
     with_cli_status(
       time = FALSE,
@@ -131,14 +140,12 @@ connect_db <- function(db = "Oracle") {
         )
       }
     )
-    # } else if (db == "...") {
-    #
   } else if (db == "Progress") {
     with_cli_status(
       time = FALSE,
       msg = paste("Connecting to", db, "database"),
       expr = {
-        conn <- dbConnect(
+        conn <- DBI::dbConnect( 
           odbc::odbc(),
           Driver                = Sys.getenv("MMBI_EPIDS_DRIVER"), # bv. "Progress OpenEdge 12.2 Driver"
           HostName              = Sys.getenv("MMBI_EPIDS_HOST"),
@@ -146,8 +153,10 @@ connect_db <- function(db = "Oracle") {
           DatabaseName          = Sys.getenv("MMBI_EPIDS_DB"),
           LogonID               = Sys.getenv("MMBI_EPIDS_USER"),
           Password              = Sys.getenv("MMBI_EPIDS_PASS"),
-          DefaultIsolationLevel = "READ UNCOMMITTED"               # leesacties blokkeren geen records
+          DefaultIsolationLevel = "READ UNCOMMITTED",              # leesacties blokkeren geen records
+          timeout               = timeout
         )
+        conn <- dbplyr::with_dialect(conn, dialect_openedge())
       }
     )
   } else if (db == "ProgressJ") {

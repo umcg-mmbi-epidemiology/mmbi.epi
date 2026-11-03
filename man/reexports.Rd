@@ -28,8 +28,8 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{certegis}{\code{\link[certegis:GIS]{add_map}}, \code{\link[certegis:GIS]{as.sf}}, \code{\link[certegis]{cases_within_radius}}, \code{\link[certegis:GIS]{convert_to_metre_CRS28992}}, \code{\link[certegis:GIS]{degrees_to_sf}}, \code{\link[certegis:GIS]{filter_geolocation}}, \code{\link[certegis:GIS]{filter_sf}}, \code{\link[certegis:geocoding]{geocode}}, \code{\link[certegis:GIS]{is.sf}}, \code{\link[certegis:GIS]{latitude}}, \code{\link[certegis:GIS]{longitude}}, \code{\link[certegis:geocoding]{reverse_geocode}}}
+  \item{certegis}{\code{\link[certegis:add_map]{add_map()}}, \code{\link[certegis:as.sf]{as.sf()}}, \code{\link[certegis:cases_within_radius]{cases_within_radius()}}, \code{\link[certegis:convert_to_metre_CRS28992]{convert_to_metre_CRS28992()}}, \code{\link[certegis:degrees_to_sf]{degrees_to_sf()}}, \code{\link[certegis:filter_geolocation]{filter_geolocation()}}, \code{\link[certegis:filter_sf]{filter_sf()}}, \code{\link[certegis:geocode]{geocode()}}, \code{\link[certegis:is.sf]{is.sf()}}, \code{\link[certegis:latitude]{latitude()}}, \code{\link[certegis:longitude]{longitude()}}, \code{\link[certegis:reverse_geocode]{reverse_geocode()}}}
 
-  \item{plot2}{\code{\link[plot2:add_type]{add_line}}, \code{\link[plot2:add_type]{add_sf}}, \code{\link[plot2:add_type]{add_smooth}}, \code{\link[plot2]{add_type}}, \code{\link[plot2:colour]{get_colour}}, \code{\link[plot2]{plot2}}}
+  \item{plot2}{\code{\link[plot2:add_line]{add_line()}}, \code{\link[plot2:add_sf]{add_sf()}}, \code{\link[plot2:add_smooth]{add_smooth()}}, \code{\link[plot2:add_type]{add_type()}}, \code{\link[plot2:get_colour]{get_colour()}}, \code{\link[plot2:plot2]{plot2()}}}
 }}
 

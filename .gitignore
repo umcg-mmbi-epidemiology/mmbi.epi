@@ -41,6 +41,9 @@ LICENSE.html
 .DS_Store
 Thumbs.db
 
+# Temporary files created by DT
+DT/
+
 # R Environment Variables
 .Renviron
 .Rproj.user

@@ -51,13 +51,13 @@ read_json_body(
 
 \item{x}{A \link{raw} or \link{character} vector}
 
-\item{key}{A character to be used as the encryption key. Internally, this is converted using \code{\link[openssl:hash]{openssl::sha256()}} to ensure a raw high-entropy key of length \code{32}, suitable for AES-GCM encryption. The default is the \link[=Sys.getenv]{system environment variable}: \code{mmbi_epi_encryption_key}.}
+\item{key}{A character to be used as the encryption key. Internally, this is converted using \code{\link[openssl:sha256]{openssl::sha256()}} to ensure a raw high-entropy key of length \code{32}, suitable for AES-GCM encryption. The default is the \link[=Sys.getenv]{system environment variable}: \code{mmbi_epi_encryption_key}.}
 
 \item{url}{A character string specifying the target URL for the HTTP POST request. Must include the full scheme (e.g., \code{"https://"} or \code{"http://"}), hostname, and path.}
 
 \item{authorization_header}{A character string specifying the value of the \code{Authorization} header to include in the POST request, e.g. \code{"Bearer <token>"}. Use \code{NULL} to omit the header.}
 
-\item{encrypt, decrypt}{Should the serialised object be encrypted/decrypted? This applies AES-GCM via \code{\link[openssl:aes_cbc]{openssl::aes_gcm_encrypt()}}, providing authenticated encryption. This guarantees both confidentiality and integrity: the file cannot be read without the correct \code{key}, and any tampering will be detected automatically during decryption. The initialization vector (iv) will be a length-12 random \link{raw} vector.}
+\item{encrypt, decrypt}{Should the serialised object be encrypted/decrypted? This applies AES-GCM via \code{\link[openssl:aes_gcm_encrypt]{openssl::aes_gcm_encrypt()}}, providing authenticated encryption. This guarantees both confidentiality and integrity: the file cannot be read without the correct \code{key}, and any tampering will be detected automatically during decryption. The initialization vector (iv) will be a length-12 random \link{raw} vector.}
 }
 \description{
 Securely serialise, compress, encrypt, and transfer any R object with full attribute preservation and cross-platform JSON compatibility.
@@ -73,7 +73,7 @@ format by wrapping it with metadata, including:
 \code{Date}, \code{POSIXct}), levels, and time zone information.
 }
 
-The wrapped structure is then converted to JSON using \code{\link[jsonlite:fromJSON]{jsonlite::toJSON()}},
+The wrapped structure is then converted to JSON using \code{\link[jsonlite:toJSON]{jsonlite::toJSON()}},
 with consistent handling of \code{NULL}s, \code{NA}s, and timestamps. This structure
 allows accurate reconstruction of the original object, including attributes,
 when passed through \code{\link[=deserialise]{deserialise()}}.
@@ -96,7 +96,7 @@ applied when \code{decompress = TRUE}.
 \subsection{Encryption (AES-GCM)}{
 
 \code{\link[=encrypt]{encrypt()}} applies AES in Galois/Counter Mode (GCM) via
-\code{\link[openssl:aes_cbc]{openssl::aes_gcm_encrypt()}}. AES-GCM provides authenticated encryption:
+\code{\link[openssl:aes_gcm_encrypt]{openssl::aes_gcm_encrypt()}}. AES-GCM provides authenticated encryption:
 it guarantees \emph{confidentiality} (content is unreadable without the key)
 and \emph{integrity} (any bit-level modification is detected during
 decryption). A fresh 12-byte initialisation vector (IV) is generated for each
